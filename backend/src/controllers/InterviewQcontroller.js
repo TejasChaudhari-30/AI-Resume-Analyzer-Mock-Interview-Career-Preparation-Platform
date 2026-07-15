@@ -55,27 +55,37 @@ RETURNING id
         console.log(aiResponse);
         const categories = ["technical", "project", "dsa", "behavioral"];
 
+const insertedQuestions = [];
+
 for (const category of categories) {
 
     const questions = aiResponse[category];
 
     for (const question of questions) {
 
-        await db.query(
+        const result = await db.query(
             `
             INSERT INTO interview_questions
             (session_id, question, category)
-            VALUES ($1, $2, $3)
+            VALUES ($1,$2,$3)
+            RETURNING id, question, category
             `,
-            [session.rows[0].id, question, category]
+            [
+                session.rows[0].id,
+                question,
+                category
+            ]
         );
 
+        insertedQuestions.push(result.rows[0]);
+
     }
+
 }
         return res.status(201).json({
             message: "Interview Questions generated successfully or inserting the questions in database",
             sessionId:session.rows[0].id,
-            questions:aiResponse
+            questions:insertedQuestions
         });
 
 
@@ -91,9 +101,9 @@ export const answers=async (req , res)=>{
         //changes to make instead of sending qid each time first store all use answer and then for that samee session  evaluate all ans at the end collectiely 
 
          const{sessionId}=req.params; //not qid session id x   
-        const{answer}=req.body;
+        const{answers}=req.body;
          
-         for(const ans of answer){
+         for(const ans of answers){
              await db.query(
         `
         update interview_questions
@@ -112,7 +122,6 @@ export const answers=async (req , res)=>{
 
       const evaluation= await evaluate_answers(response.rows);
       const results=evaluation.results;
-   console.log(results);
 
         for (const result of results) {
   await db.query(
@@ -122,7 +131,7 @@ export const answers=async (req , res)=>{
         ai_feedback = $2
     WHERE id = $3
     `,
-    [result.score, result.feedback, result.id]
+    [result.score, result.feedback, result.questionId]
   );
 }
    await db.query(

@@ -32,15 +32,15 @@ function Sidebar() {
         //     icon: <FaRobot />
         // },
         {
-            name: "Generate Interview",
-            path: "/interview/generate",
+            name: "Interview Management",
+            path: "/interview/interviewmanager",
             icon: <FaRobot />
         },
-        {
-            name: "Interview History",
-            path: "/interview/history",
-            icon: <FaHistory />
-        },
+        // {
+        //     name: "Interview History",
+        //     path: "/interview/history",
+        //     icon: <FaHistory />
+        // },
         {
             name: "Profile",
             path: "/profile",

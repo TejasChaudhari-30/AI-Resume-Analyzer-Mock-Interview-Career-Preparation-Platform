@@ -140,12 +140,12 @@ Return ONLY JSON:
 {
   "results": [
     {
-      "id": "q1",
+      "questionId": "q1",
       "score": 8,
       "feedback": "Good explanation."
     },
     {
-      "id": "q2",
+      "questionId": "q2",
       "score": 6,
       "feedback": "Needs more detail."
     }
@@ -154,7 +154,7 @@ Return ONLY JSON:
   "overallFeedback": "Strong technical fundamentals."
 }`
 
-console.log()
+
  const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
@@ -162,7 +162,6 @@ console.log()
         responseMimeType: "application/json",
       },
     });
-    console.log(response.text);
     
     return JSON.parse(response.text);
     }

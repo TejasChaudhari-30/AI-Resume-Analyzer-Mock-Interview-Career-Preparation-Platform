@@ -9,6 +9,9 @@ import Layout from './components/Layout.jsx';
 import Profile from './pages/sidebarFeatures/profile.jsx';
 import ResumeManagement from './pages/sidebarFeatures/ResumeManagement.jsx';
 import ResumeReviewPage from './pages/sidebarFeatures/ResumeReviewPage.jsx';
+import InterviewManagement from './pages/sidebarFeatures/InterviewManagement.jsx';
+import InterviewSession from './pages/Interview/InterviewSession.jsx';
+import InterviewResult from './pages/Interview/InterviewResult.jsx';
 
 function App() {
   return (
@@ -20,6 +23,14 @@ function App() {
        {/* <Route path="/resume/upload" element={<ProtectedRoute> <Layout><UploadResume/></Layout> </ProtectedRoute>}/> */}
         <Route path="/resume/resumemanager" element={<ProtectedRoute> <Layout><ResumeManagement/></Layout> </ProtectedRoute>}/>
          <Route path="/resume/review/:resumeId" element={<ProtectedRoute> <Layout><ResumeReviewPage/></Layout> </ProtectedRoute>}/>
+          <Route path="/interview/interviewmanager" element={<ProtectedRoute> <Layout><InterviewManagement/></Layout> </ProtectedRoute>}/>
+          <Route
+    path="/interview/session/:sessionId"
+    element={ <ProtectedRoute><InterviewSession/></ProtectedRoute>}
+/>
+
+             <Route path="/interview/result/:sessionId" element={<ProtectedRoute> <Layout><InterviewResult/></Layout> </ProtectedRoute>}/>
+
 
 
 
