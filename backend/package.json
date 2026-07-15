@@ -1,0 +1,25 @@
+{
+  "name": "ai_interview_and_career_preparation_app",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/main.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.8.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "pdf-parse-new": "^2.1.0",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
+  }
+}
