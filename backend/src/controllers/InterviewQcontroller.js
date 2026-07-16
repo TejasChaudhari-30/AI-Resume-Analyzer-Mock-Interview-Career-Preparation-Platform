@@ -212,13 +212,26 @@ return res.status(200).json({
     }
 }
 export const getInterviewHistory = async (req, res) => {
-    const page = Number(req.query.page) || 1;
-const limit = 10;
-const offset = (page - 1) * limit;
+
     try {
 
         const userId = req.user.id;
-        // console.log(userId);
+
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 5;
+
+        const offset = (page - 1) * limit;
+
+        const totalResult = await db.query(
+            `
+            SELECT COUNT(*)
+            FROM interview_sessions
+            WHERE user_id = $1
+            `,
+            [userId]
+        );
+
+        const total = Number(totalResult.rows[0].count);
 
         const history = await db.query(
             `
@@ -234,22 +247,106 @@ const offset = (page - 1) * limit;
             ORDER BY started_at DESC
             LIMIT $2 OFFSET $3
             `,
-            [userId,limit,offset]
+            [userId, limit, offset]
         );
 
         return res.status(200).json({
-            count: history.rows.length,
-            interviews: history.rows
-        });
 
-    } catch (error) {
+            interviews: history.rows,
 
-        console.error("Error fetching interview history:", error);
+            pagination: {
 
-        return res.status(500).json({
-            message: "Failed to fetch interview history"
+                page,
+
+                limit,
+
+                total,
+
+                totalPages: Math.ceil(total / limit)
+
+            }
+
         });
 
     }
+    catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            message: "Failed to fetch interview history"
+
+        });
+
+    }
+
 };
 
+export const deleteInterview = async (req, res) => {
+
+    try {
+
+        const { sessionId } = req.params;
+
+        const userId = req.user.id;
+
+        const session = await db.query(
+            `
+            SELECT id
+            FROM interview_sessions
+            WHERE id = $1
+            AND user_id = $2
+            `,
+            [
+                sessionId,
+                userId
+            ]
+        );
+
+        if (session.rows.length === 0) {
+
+            return res.status(404).json({
+
+                message: "Interview not found"
+
+            });
+
+        }
+
+        await db.query(
+            `
+            DELETE FROM interview_questions
+            WHERE session_id = $1
+            `,
+            [sessionId]
+        );
+
+        await db.query(
+            `
+            DELETE FROM interview_sessions
+            WHERE id = $1
+            `,
+            [sessionId]
+        );
+
+        return res.status(200).json({
+
+            message: "Interview deleted successfully"
+
+        });
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            message: "Failed to delete interview"
+
+        });
+
+    }
+
+};

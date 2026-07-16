@@ -1,7 +1,7 @@
 import { auth } from "google-auth-library";
 import { authMiddleware } from "../middleware/authmiddleware.js";
 import express from "express";
-import { answers, InterviewQ ,getInterviewReport,getInterviewHistory} from "../controllers/InterviewQcontroller.js";
+import { answers, InterviewQ ,getInterviewReport,getInterviewHistory, deleteInterview} from "../controllers/InterviewQcontroller.js";
 import { generateInterviewSchema, submitAnswersSchema } from "../validations/interviewSchema.js";
 import { validate } from "../middleware/validateMiddleware.js";
 
@@ -11,6 +11,6 @@ router3.post("/generate/:resumeId",authMiddleware,validate(generateInterviewSche
 router3.post("/evaluate/:sessionId",authMiddleware,validate(submitAnswersSchema),answers);
 router3.get("/report/:sessionId",authMiddleware,getInterviewReport);
 router3.get( "/history", authMiddleware,getInterviewHistory);
-
+router3.delete("/:sessionId",authMiddleware,deleteInterview);
 
 export default router3;

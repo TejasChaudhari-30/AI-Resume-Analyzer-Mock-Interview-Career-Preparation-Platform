@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../../api/backendapi.jsx";
 
@@ -10,22 +11,28 @@ function ResumeManagement() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+
         fetchResumes();
+
     }, []);
 
     async function fetchResumes() {
 
         try {
 
-            const response = await api.get("/resume");
+            setLoading(true);
+
+            const response = await api.get("/resume?limit=5");
 
             setResumes(response.data.resumes);
 
-        } catch (error) {
+        }
+        catch (error) {
 
             console.log(error);
 
-        } finally {
+        }
+        finally {
 
             setLoading(false);
 
@@ -47,13 +54,24 @@ function ResumeManagement() {
                 refreshResumes={fetchResumes}
             />
 
-            <div className="mt-10">
+            <div className="mt-12">
 
-                <h2 className="text-2xl font-semibold mb-5">
+                <div className="flex justify-between items-center mb-5">
 
-                    Uploaded Resumes
+                    <h2 className="text-2xl font-semibold">
 
-                </h2>
+                        Recent Resumes
+
+                    </h2>
+
+                    <Link
+                        to="/resume/history"
+                        className="text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                        View All →
+                    </Link>
+
+                </div>
 
                 <ResumeList
                     resumes={resumes}

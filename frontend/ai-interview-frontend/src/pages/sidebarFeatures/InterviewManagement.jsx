@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api/backendapi.jsx";
+import { Link } from "react-router-dom";
 
 import GenerateInterviewForm from "../../components/interview/GenerateInterviewForm.jsx";
-// import InterviewList from "../../components/interview/InterviewList.jsx";
+import InterviewHistoryList from "../../components/interview/InterviewHistoryList.jsx";
 
 function InterviewManagement() {
 
@@ -54,18 +55,30 @@ function InterviewManagement() {
             />
 
             <div className="mt-10">
+ <div className="flex justify-between items-center mb-4">
 
+              
+
+          
                 <h2 className="text-2xl font-semibold mb-6">
 
                     Previous Interviews
 
                 </h2>
 
-                {/* <InterviewList
+                  <Link
+                    to="/interviews/history"
+                    className="text-blue-600 hover:underline"
+                >
+                    View All
+                </Link>
+
+  </div>
+                <InterviewHistoryList
                     interviews={interviews}
                     loading={loading}
                     refreshInterviews={fetchInterviews}
-                /> */}
+                />
 
             </div>
 

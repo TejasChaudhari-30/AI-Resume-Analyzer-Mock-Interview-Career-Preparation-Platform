@@ -55,30 +55,65 @@ export const getUserResumes = async (req, res) => {
 
         const userId = req.user.id;
 
-        const result = await db.query(
-            `
-           SELECT
-    id,
-    file_name,
-    uploaded_at
-FROM resumes
-WHERE user_id = $1
-ORDER BY uploaded_at DESC;
-            `,
-            [userId]
-        );
+        const page = Number(req.query.page) || 1;
+        const limit = req.query.limit
+            ? Number(req.query.limit)
+            : null;
+
+        let result;
+
+        if (limit) {
+
+            const offset = (page - 1) * limit;
+
+            result = await db.query(
+                `
+                SELECT
+                    id,
+                    file_name,
+                    uploaded_at
+                FROM resumes
+                WHERE user_id = $1
+                ORDER BY uploaded_at DESC
+                LIMIT $2 OFFSET $3
+                `,
+                [userId, limit, offset]
+            );
+
+        } else {
+
+            result = await db.query(
+                `
+                SELECT
+                    id,
+                    file_name,
+                    uploaded_at
+                FROM resumes
+                WHERE user_id = $1
+                ORDER BY uploaded_at DESC
+                `,
+                [userId]
+            );
+
+        }
 
         return res.status(200).json({
+
             message: "Resumes fetched successfully",
+
             resumes: result.rows
+
         });
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
 
         return res.status(500).json({
+
             message: "Failed to fetch resumes"
+
         });
 
     }

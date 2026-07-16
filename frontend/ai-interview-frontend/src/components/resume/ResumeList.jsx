@@ -4,6 +4,7 @@ function ResumeList({
     resumes,
     loading,
     refreshResumes
+
 }) {
 
     if (loading) {
@@ -35,6 +36,8 @@ function ResumeList({
 
             </div>
         );
+
+        
 
     }
 

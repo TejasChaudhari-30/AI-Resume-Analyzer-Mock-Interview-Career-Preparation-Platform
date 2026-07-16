@@ -12,6 +12,8 @@ import ResumeReviewPage from './pages/sidebarFeatures/ResumeReviewPage.jsx';
 import InterviewManagement from './pages/sidebarFeatures/InterviewManagement.jsx';
 import InterviewSession from './pages/Interview/InterviewSession.jsx';
 import InterviewResult from './pages/Interview/InterviewResult.jsx';
+import InterviewHistoryPage from './pages/Interview/InterviewHistoryPage.jsx';
+import ResumeHistoryPage from './pages/resume/ResumeHistoryPage.jsx';
 
 function App() {
   return (
@@ -30,7 +32,8 @@ function App() {
 />
 
              <Route path="/interview/result/:sessionId" element={<ProtectedRoute> <Layout><InterviewResult/></Layout> </ProtectedRoute>}/>
-
+              <Route path="/interviews/history" element={<ProtectedRoute> <Layout><InterviewHistoryPage/></Layout> </ProtectedRoute>}/>
+             <Route path="/resume/history" element={<ProtectedRoute> <Layout><ResumeHistoryPage/></Layout> </ProtectedRoute>}/>
 
 
 

@@ -13,7 +13,7 @@ function RecentInterviewsCard({ interviews }) {
                 </h2>
 
                 <Link
-                    to="/interview/history"
+                    to="/interviews/history"
                     className="text-blue-600 hover:underline"
                 >
                     View All
