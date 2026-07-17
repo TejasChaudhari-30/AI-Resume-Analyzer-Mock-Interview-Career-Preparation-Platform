@@ -9,10 +9,10 @@ Built using **React**, **Node.js**, **Express.js**, **PostgreSQL (Neon)**, and *
 ## 🌐 Live Demo
 
 ### Frontend
-https://YOUR-VERCEL-URL.vercel.app
+https://ai-resume-analyzer-mock-interview-c-ten.vercel.app
 
 ### Backend API
-https://YOUR-RENDER-URL.onrender.com
+https://ai-resume-analyzer-mock-interview-career.onrender.com
 
 ---
 
