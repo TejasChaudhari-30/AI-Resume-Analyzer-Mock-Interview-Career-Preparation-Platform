@@ -17,22 +17,22 @@ const app=express();
 app.use(
     cors({
         origin:"http://localhost:5173",
-        
+
         credentials:true,
     })
 );
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.use("/api/auth", router1);
-app.use("/api/resume",router2);
-app.use("/api/interview",router3);
-app.use("/api/users",router4);
-app.use("/api",router5);
+app.use("/auth", router1);
+app.use("/resume",router2);
+app.use("/interview",router3);
+app.use("/users",router4);
+app.use("/",router5);
 
-app.get("/",(req,res)=>{
-    res.send("hii");
-})
+// app.get("/",(req,res)=>{
+//     res.send("hii");
+// })
 
 
 app.listen(port,()=>{
