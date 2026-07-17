@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/backendapi.jsx";
 import InterviewHistoryCard from "./InterviewHistoryCard";
-import { Link } from "react-router-dom";
 
 function InterviewHistoryList({ showAll = false }) {
 
@@ -14,6 +13,7 @@ function InterviewHistoryList({ showAll = false }) {
 
     }, []);
 
+
     async function fetchHistory() {
 
         try {
@@ -24,31 +24,26 @@ function InterviewHistoryList({ showAll = false }) {
 
                 setInterviews(response.data.interviews);
 
-            }
-
-            else {
+            } else {
 
                 setInterviews(
-                    response.data.interviews.slice(0,5)
+                    response.data.interviews.slice(0, 5)
                 );
 
             }
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.log(error);
 
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
         }
 
     }
+
 
     function removeInterview(id) {
 
@@ -58,27 +53,55 @@ function InterviewHistoryList({ showAll = false }) {
 
     }
 
+
     if (loading) {
 
         return (
 
-            <div className="text-center py-10">
+            <div className="space-y-5">
 
-                Loading...
+                {[1,2,3].map((item)=>(
+                    <div
+                        key={item}
+                        className="
+                        h-44 
+                        rounded-2xl 
+                        bg-gray-100
+                        animate-pulse
+                        "
+                    />
+                ))}
 
             </div>
 
         );
 
     }
+
 
     if (interviews.length === 0) {
 
         return (
 
-            <div className="bg-white rounded-xl shadow p-8 text-center">
+            <div
+                className="
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                p-10
+                text-center
+                shadow-sm
+                "
+            >
 
-                No Interviews Found
+                <h3 className="text-lg font-semibold text-gray-800">
+                    No Interview Attempts Yet
+                </h3>
+
+                <p className="text-gray-500 mt-2">
+                    Generate your first AI mock interview and track your progress here.
+                </p>
 
             </div>
 
@@ -86,15 +109,13 @@ function InterviewHistoryList({ showAll = false }) {
 
     }
 
+
     return (
 
         <div className="space-y-5">
-             
-
 
             {
-
-                interviews.map((interview) => (
+                interviews.map((interview)=>(
 
                     <InterviewHistoryCard
 
@@ -107,7 +128,6 @@ function InterviewHistoryList({ showAll = false }) {
                     />
 
                 ))
-
             }
 
         </div>

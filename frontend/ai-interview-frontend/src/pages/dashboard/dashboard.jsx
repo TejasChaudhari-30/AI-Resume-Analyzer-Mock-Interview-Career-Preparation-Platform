@@ -14,6 +14,7 @@ import {
     ScoreTrendChart,
     DifficultyDistribution
 } from "../../components/dashboard/DashboardExtras.jsx";
+
 import { getStoredTheme, persistTheme } from "../../theme/theme.js";
 
 function Dashboard() {

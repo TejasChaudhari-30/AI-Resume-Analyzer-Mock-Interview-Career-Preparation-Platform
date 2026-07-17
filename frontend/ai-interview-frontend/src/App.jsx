@@ -15,6 +15,8 @@ import InterviewResult from './pages/Interview/InterviewResult.jsx';
 import InterviewHistoryPage from './pages/Interview/InterviewHistoryPage.jsx';
 import ResumeHistoryPage from './pages/resume/ResumeHistoryPage.jsx';
 import { applyTheme, getStoredTheme } from './theme/theme.js';
+import  Home from  "./pages/Home.jsx";
+import About from './pages/About.jsx';
 
 function App() {
   useEffect(() => {
@@ -23,6 +25,8 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<Home/>}/>;
+      <Route path="about" element={<About/>}/>;
        <Route path="/register" element={<Register/>}/>;
        <Route path="/login" element={<Login/>}/>;
        <Route path="/dashboard" element={<ProtectedRoute> <Layout> <Dashboard/> </Layout></ProtectedRoute>}/>;

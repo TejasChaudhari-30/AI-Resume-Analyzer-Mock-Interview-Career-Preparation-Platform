@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/backendapi.jsx";
+import {
+  Sparkles,
+  FileText,
+  Briefcase,
+  Brain,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 function GenerateInterviewForm() {
 
@@ -95,13 +103,35 @@ function GenerateInterviewForm() {
 
     return (
 
-        <div className="bg-white shadow rounded-xl p-8">
+        <div
+className="
+bg-white
+dark:bg-[#111827]
+rounded-2xl
+p-8
+border
+border-gray-200
+dark:border-gray-800
+shadow-sm
+"
+>
 
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="mb-8">
+  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-300">
+    <Sparkles className="h-4 w-4" />
+    AI Interview Generator
+  </span>
 
-                Generate Interview
+  <h2 className="mt-5 text-3xl font-bold text-slate-900 dark:text-white">
+    Create a Personalized Interview
+  </h2>
 
-            </h2>
+  <p className="mt-3 text-gray-700
+dark:text-gray-300">
+    Select a resume, choose your target role and difficulty, then let AI
+    generate an interview tailored to your profile.
+  </p>
+</div>
 
             <form
                 onSubmit={handleSubmit}
@@ -110,13 +140,29 @@ function GenerateInterviewForm() {
 
                 <div>
 
-                    <label className="block mb-2 font-medium">
+                   <label className="mb-3 flex items-center gap-2 font-semibold text-gray-700
+dark:text-gray-300">
+  <FileText className="h-5 w-5 text-blue-500" />
+  Resume
+</label>
 
-                        Resume
-
-                    </label>
-
-                    <select
+                    <select className="
+w-full
+rounded-2xl
+border
+border-slate-300
+bg-white
+px-5
+py-3
+shadow-sm
+transition
+focus:border-blue-500
+focus:ring-4
+focus:ring-blue-100
+dark:border-slate-700
+dark:bg-slate-800
+dark:text-white
+"
 
                         value={resumeId}
 
@@ -124,7 +170,21 @@ function GenerateInterviewForm() {
                             setResumeId(e.target.value)
                         }
 
-                        className="w-full border rounded-lg p-3"
+                        className="
+w-full
+rounded-xl
+border
+border-gray-200
+bg-gray-50
+text-gray-800
+
+dark:border-gray-700
+dark:bg-gray-900
+dark:text-white
+
+px-4
+py-3
+"
 
                     >
 
@@ -160,12 +220,10 @@ function GenerateInterviewForm() {
 
                 <div>
 
-                    <label className="block mb-2 font-medium">
-
-                        Target Role
-
-                    </label>
-
+                   <label className="mb-3 flex items-center gap-2 font-semibold">
+    <Briefcase className="h-5 w-5 text-blue-500"/>
+    Target Role
+</label>
                     <input
 
                         type="text"
@@ -186,36 +244,58 @@ function GenerateInterviewForm() {
 
                 <div>
 
-                    <label className="block mb-2 font-medium">
+    <label className="mb-3 flex items-center gap-2 font-semibold text-gray-700
+dark:text-gray-300">
+        <Brain className="h-5 w-5 text-blue-500" />
+        Difficulty
+    </label>
 
-                        Difficulty
+    <div className="grid grid-cols-3 gap-3">
 
-                    </label>
+        <button
+            type="button"
+            onClick={() => setDifficulty("Easy")}
+            className={`rounded-2xl border px-4 py-3 font-semibold transition-all duration-300
+            ${
+                difficulty === "Easy"
+                    ? "bg-green-500 text-white border-green-500 shadow-lg"
+                    : "bg-white border-slate-300 hover:border-green-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+            }`}
+        >
+            Easy
+        </button>
 
-                    <select
+        <button
+            type="button"
+            onClick={() => setDifficulty("Medium")}
+            className={`rounded-2xl border px-4 py-3 font-semibold transition-all duration-300
+            ${
+                difficulty === "Medium"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+                    : "bg-white border-slate-300 hover:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+            }`}
+        >
+            Medium
+        </button>
 
-                        value={difficulty}
+        <button
+            type="button"
+            onClick={() => setDifficulty("Hard")}
+            className={`rounded-2xl border px-4 py-3 font-semibold transition-all duration-300
+            ${
+                difficulty === "Hard"
+                    ? "bg-red-500 text-white border-red-500 shadow-lg"
+                    : "bg-white border-slate-300 hover:border-red-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+            }`}
+        >
+            Hard
+        </button>
 
-                        onChange={(e) =>
-                            setDifficulty(e.target.value)
-                        }
+    </div>
 
-                        className="w-full border rounded-lg p-3"
-
-                    >
-
-                        <option value="Easy">Easy</option>
-
-                        <option value="Medium">Medium</option>
-
-                        <option value="Hard">Hard</option>
-
-                    </select>
-
-                </div>
-
+</div>
                 <button
-
+  
                     type="submit"
 
                     disabled={loading}

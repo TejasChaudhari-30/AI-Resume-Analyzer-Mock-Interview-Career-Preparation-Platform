@@ -21,7 +21,7 @@ export const generateInterviewSchema = z.object({
 export const submitAnswersSchema = z.object({
     answers: z.array(
         z.object({
-             questionId: z.string().uuid(),
+            
             answer: z.string().min(1, "Answer cannot be empty")
         })
     ).min(1, "At least one answer is required")

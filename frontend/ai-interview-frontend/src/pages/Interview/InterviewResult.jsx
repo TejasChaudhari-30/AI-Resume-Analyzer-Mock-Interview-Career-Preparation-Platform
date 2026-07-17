@@ -1,10 +1,23 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/backendapi.jsx";
+
+import {
+    Sparkles,
+    Target,
+    MessageSquare,
+    Download,
+    ArrowRight,
+    Copy,
+    CheckCircle2,
+} from "lucide-react";
 
 function InterviewResult() {
 
     const { sessionId } = useParams();
+    const navigate = useNavigate();
+
+const [copied,setCopied]=useState("");
 
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -38,150 +51,563 @@ function InterviewResult() {
         }
 
     }
+    function getScoreColor(score){
+
+    if(score>=80) return "text-emerald-500";
+
+    if(score>=60) return "text-yellow-500";
+
+    return "text-red-500";
+
+}
+
+function getProgressColor(score){
+
+    if(score>=80)
+
+        return "from-emerald-500 to-green-400";
+
+    if(score>=60)
+
+        return "from-yellow-500 to-orange-400";
+
+    return "from-red-500 to-pink-500";
+
+}
+
+function getPerformance(score){
+
+    if(score>=90)
+
+        return "Outstanding";
+
+    if(score>=80)
+
+        return "Excellent";
+
+    if(score>=70)
+
+        return "Good";
+
+    if(score>=60)
+
+        return "Average";
+
+    return "Needs Practice";
+
+}
+
+async function copyFeedback(){
+
+    await navigator.clipboard.writeText(
+
+        report.overallFeedback
+
+    );
+
+    setCopied("overall");
+
+    setTimeout(()=>{
+
+        setCopied("");
+
+    },2000);
+
+}
 
     if (loading) {
 
         return (
 
-            <div className="text-center mt-20 text-xl">
+            <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#111318]">
 
-                Loading Report...
+    <div className="rounded-3xl bg-white dark:bg-[#181b21] p-10 shadow-lg">
 
-            </div>
+        <Sparkles className="mx-auto h-12 w-12 animate-pulse text-blue-500"/>
 
+        <h2 className="mt-5 text-2xl font-bold dark:text-white">
+
+            AI is evaluating your interview...
+
+        </h2>
+
+        <p className="mt-2 text-slate-500">
+
+            Generating your personalized report.
+
+        </p>
+
+    </div>
+
+</div>
         );
 
     }
 
-    return (
+   return(
 
-        <div className="max-w-6xl mx-auto p-8">
+<div className="min-h-screen bg-slate-100 dark:bg-[#111318]">
 
-            {/* Heading */}
+<div className="max-w-7xl mx-auto px-5 py-8">
 
-            <h1 className="text-4xl font-bold mb-8">
+{/* HERO */}
 
-                Interview Report
+<div className="mb-10 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-[#181b21]">
 
-            </h1>
+<div className="h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400"/>
 
-            {/* Overall Score */}
+<div className="p-8">
 
-            <div className="bg-white shadow rounded-xl p-6 mb-8">
+<div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
-                <h2 className="text-xl font-semibold mb-2">
+<div>
 
-                    Overall Score
+<div className="inline-flex items-center gap-2 rounded-full bg-blue-100 dark:bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300">
 
-                </h2>
+<Sparkles className="h-4 w-4"/>
 
-                <p className="text-6xl font-bold text-blue-600">
+AI Interview Evaluation
 
-                    {report.overallScore}/100
+</div>
 
-                </p>
+<h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
 
-            </div>
+Interview Performance Report
+
+</h1>
+
+<p className="mt-4 max-w-2xl text-slate-600 dark:text-slate-400">
+
+Detailed AI analysis of your interview answers with actionable feedback and scoring.
+
+</p>
+
+</div>
+
+<div className="text-center">
+
+<div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border-[10px] border-slate-200 dark:border-slate-700 bg-white dark:bg-[#111318] shadow-lg">
+
+<div>
+
+<p className={`text-5xl font-bold ${getScoreColor(report.overallScore)}`}>
+
+{report.overallScore}
+
+</p>
+
+<p className="text-sm text-slate-500">
+
+/100
+
+</p>
+
+</div>
+
+</div>
+
+<p className="mt-4 font-semibold dark:text-white">
+
+{getPerformance(report.overallScore)}
+
+</p>
+
+</div>
+
+</div>
+
+<div className="mt-8">
+
+<div className="flex justify-between mb-2 text-sm">
+
+<span className="text-slate-500">
+
+Overall Progress
+
+</span>
+
+<span className="font-medium dark:text-white">
+
+{report.overallScore}%
+
+</span>
+
+</div>
+
+<div className="h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+
+<div
+
+style={{
+
+width:`${report.overallScore}%`
+
+}}
+
+className={`
+
+h-full
+
+rounded-full
+
+bg-gradient-to-r
+
+${getProgressColor(report.overallScore)}
+
+transition-all
+
+duration-1000
+
+`}
+
+/>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{/* STATS */}
+
+<div className="grid gap-6 md:grid-cols-3 mb-10">
+
+<div className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-[#181b21] p-6">
+
+<div className="flex justify-between items-center">
+
+<div>
+
+<p className="text-slate-500">
+
+Overall Score
+
+</p>
+
+<h2 className={`mt-2 text-4xl font-bold ${getScoreColor(report.overallScore)}`}>
+
+{report.overallScore}
+
+</h2>
+
+</div>
+
+<Target className="h-9 w-9 text-blue-500"/>
+
+</div>
+
+</div>
+
+<div className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-[#181b21] p-6">
+
+<div className="flex justify-between items-center">
+
+<div>
+
+<p className="text-slate-500">
+
+Questions
+
+</p>
+
+<h2 className="mt-2 text-4xl font-bold text-blue-500">
+
+{report.questions.length}
+
+</h2>
+
+</div>
+
+<MessageSquare className="h-9 w-9 text-cyan-500"/>
+
+</div>
+
+</div>
+
+<div className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-[#181b21] p-6">
+
+<div className="flex justify-between items-center">
+
+<div>
+
+<p className="text-slate-500">
+
+Average Score
+
+</p>
+
+<h2 className="mt-2 text-4xl font-bold text-emerald-500">
+
+{(report.questions.reduce((a,b)=>a+b.score,0)/report.questions.length).toFixed(1)}
+
+</h2>
+
+</div>
+
+<CheckCircle2 className="h-9 w-9 text-emerald-500"/>
+
+</div>
+
+</div>
+
+</div>
 
             {/* Overall Feedback */}
 
-            <div className="bg-white shadow rounded-xl p-6 mb-10">
+          {/* ================= OVERALL FEEDBACK ================= */}
 
-                <h2 className="text-xl font-semibold mb-4">
+<div className="mb-10 overflow-hidden rounded-3xl border border-blue-200 bg-slate-50 shadow-sm dark:border-blue-800 dark:bg-[#181b21]">
 
-                    Overall Feedback
+    <div className="h-1 bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500"/>
 
-                </h2>
+    <div className="p-8">
 
-                <p className="text-gray-700 leading-7">
+        <div className="flex items-center justify-between">
 
-                    {report.overallFeedback}
+            <div className="flex items-center gap-3">
 
-                </p>
+                <div className="rounded-2xl bg-blue-100 p-3 dark:bg-blue-500/10">
+
+                    <MessageSquare className="h-6 w-6 text-blue-600"/>
+
+                </div>
+
+                <div>
+
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+
+                        AI Overall Feedback
+
+                    </h2>
+
+                    <p className="text-sm text-slate-500">
+
+                        Summary of your interview performance
+
+                    </p>
+
+                </div>
 
             </div>
+
+            <button
+
+                onClick={copyFeedback}
+
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+
+            >
+
+                <Copy className="h-4 w-4"/>
+
+                {copied === "overall" ? "Copied!" : "Copy"}
+
+            </button>
+
+        </div>
+
+        <p className="mt-8 leading-8 text-slate-700 dark:text-slate-300">
+
+            {report.overallFeedback}
+
+        </p>
+
+    </div>
+
+</div>
 
             {/* Question Wise Report */}
 
-            <h2 className="text-2xl font-bold mb-5">
+          <div className="mb-6">
 
-                Question Analysis
+    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
 
-            </h2>
+        Question Analysis
 
-            <div className="space-y-6">
+    </h2>
 
-                {
+    <p className="mt-2 text-slate-500">
 
-                    report.questions.map((q, index) => (
+        Detailed AI evaluation for every interview question.
 
-                        <div
-                            key={index}
-                            className="bg-white shadow rounded-xl p-6"
-                        >
+    </p>
 
-                            <div className="flex justify-between items-center mb-4">
+</div>
+           <div className="space-y-8">
 
-                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+{
 
-                                    {q.category}
+report.questions.map((q,index)=>{
 
-                                </span>
+const scoreColor=
 
-                                <span className="font-semibold text-lg">
+q.score>=8
 
-                                    Score : {q.score}/10
+?"emerald"
 
-                                </span>
+:q.score>=6
 
-                            </div>
+?"amber"
 
-                            <h3 className="font-semibold text-lg mb-3">
+:"red";
 
-                                Q{index + 1}. {q.question}
+return(
 
-                            </h3>
+<div
 
-                            <div className="mb-4">
+key={index}
 
-                                <h4 className="font-medium mb-1">
+className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-[#181b21]"
 
-                                    Your Answer
+>
 
-                                </h4>
+<div className={`
 
-                                <p className="bg-gray-100 rounded-lg p-3">
+h-1
 
-                                    {q.user_answer || "No Answer"}
+bg-gradient-to-r
 
-                                </p>
+${
 
-                            </div>
+scoreColor==="emerald"
 
-                            <div>
+?"from-emerald-500 to-green-400"
 
-                                <h4 className="font-medium mb-1">
+:scoreColor==="amber"
 
-                                    AI Feedback
+?"from-amber-500 to-orange-500"
 
-                                </h4>
+:"from-red-500 to-pink-500"
 
-                                <p className="bg-green-50 rounded-lg p-3">
+}
 
-                                    {q.ai_feedback}
+`}/>
 
-                                </p>
+<div className="p-8">
 
-                            </div>
+<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-                        </div>
+<div>
 
-                    ))
+<p className="text-sm text-slate-500">
 
-                }
+Question {index+1}
 
-            </div>
+</p>
 
+<h3 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
+
+{q.question}
+
+</h3>
+
+</div>
+
+<div className="flex items-center gap-3">
+
+<span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+
+{q.category}
+
+</span>
+
+<span
+
+className={`
+
+rounded-full
+
+px-4
+
+py-2
+
+text-sm
+
+font-semibold
+
+${
+
+scoreColor==="emerald"
+
+?"bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+
+:scoreColor==="amber"
+
+?"bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+
+:"bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+
+}
+
+`}
+
+>
+
+{q.score}/10
+
+</span>
+
+</div>
+
+</div>
+<div className="mt-8 grid gap-6 lg:grid-cols-2">
+
+<div>
+
+<h4 className="mb-3 font-semibold text-slate-900 dark:text-white">
+
+Your Answer
+
+</h4>
+
+<div className="rounded-2xl bg-slate-100 p-5 dark:bg-slate-800">
+
+<p className="leading-7 text-slate-700 dark:text-slate-300">
+
+{q.user_answer || "No answer submitted."}
+
+</p>
+
+</div>
+
+</div>
+
+<div>
+
+<h4 className="mb-3 font-semibold text-slate-900 dark:text-white">
+
+AI Feedback
+
+</h4>
+
+<div className="rounded-2xl bg-emerald-50 p-5 dark:bg-emerald-500/5">
+
+<p className="leading-7 text-slate-700 dark:text-slate-300">
+
+{q.ai_feedback}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+);
+
+})
+
+}
+
+</div>
+</div>
         </div>
 
     );
