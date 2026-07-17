@@ -3,7 +3,9 @@ import db from "../config/db.js";
 import fs from "fs";
 import pdf from "pdf-parse-new";
 
-
+if (!fs.existsSync("./uploads/resumes")) {
+    fs.mkdirSync("./uploads/resumes", { recursive: true });
+}
 export const uploadResume = async (req, res) => {
 
     try {
