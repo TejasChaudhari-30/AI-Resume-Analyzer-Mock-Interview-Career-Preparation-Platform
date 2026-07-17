@@ -6,7 +6,7 @@ import Login from './pages/auth/login.jsx';
 import Dashboard from './pages/dashboard/dashboard.jsx';
 import ProtectedRoute from './components/auth/protectedRoute.jsx';
 import Layout from './components/Layout.jsx';
-import Profile from './pages/sidebarFeatures/profile.jsx';
+import Profile from './pages/sidebarFeatures/Profile.jsx';
 import ResumeManagement from './pages/sidebarFeatures/ResumeManagement.jsx';
 import ResumeReviewPage from './pages/sidebarFeatures/ResumeReviewPage.jsx';
 import InterviewManagement from './pages/sidebarFeatures/InterviewManagement.jsx';
