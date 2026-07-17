@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import './App.css'
 import {Routes,Route} from"react-router-dom";
 import  Register  from "./pages/auth/register.jsx";
@@ -14,8 +14,13 @@ import InterviewSession from './pages/Interview/InterviewSession.jsx';
 import InterviewResult from './pages/Interview/InterviewResult.jsx';
 import InterviewHistoryPage from './pages/Interview/InterviewHistoryPage.jsx';
 import ResumeHistoryPage from './pages/resume/ResumeHistoryPage.jsx';
+import { applyTheme, getStoredTheme } from './theme/theme.js';
 
 function App() {
+  useEffect(() => {
+    applyTheme(getStoredTheme());
+  }, []);
+
   return (
     <Routes>
        <Route path="/register" element={<Register/>}/>;

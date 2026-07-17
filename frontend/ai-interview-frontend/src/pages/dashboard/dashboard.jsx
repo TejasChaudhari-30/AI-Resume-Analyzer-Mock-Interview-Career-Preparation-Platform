@@ -14,16 +14,16 @@ import {
     ScoreTrendChart,
     DifficultyDistribution
 } from "../../components/dashboard/DashboardExtras.jsx";
+import { getStoredTheme, persistTheme } from "../../theme/theme.js";
 
 function Dashboard() {
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [theme, setTheme] = useState(() => localStorage.getItem("dashboardTheme") || "light");
+    const [theme, setTheme] = useState(getStoredTheme);
 
     useEffect(() => {
-        document.documentElement.classList.toggle("dark", theme === "dark");
-        localStorage.setItem("dashboardTheme", theme);
+        persistTheme(theme);
     }, [theme]);
 
     useEffect(() => {
