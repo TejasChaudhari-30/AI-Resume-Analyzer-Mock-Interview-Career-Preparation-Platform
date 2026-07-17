@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../api/backendapi.jsx";
 
-import WelcomeCard from "../../components/dashboard/WelcomeCard.jsx";
-import StatsCard from "../../components/dashboard/StatsCard.jsx";
-import LatestResumeCard from "../../components/dashboard/LatestResumeCard.jsx";
-import ResumeReviewCard from "../../components/dashboard/ResumeReviewCard.jsx";
-import RecentInterviewsCard from "../../components/dashboard/RecentInterviewsCard.jsx";
+import WelcomeCard from "../../components/Dashboard/WelcomeCard.jsx";
+import StatsCard from "../../components/Dashboard/StatsCard.jsx";
+import LatestResumeCard from "../../components/Dashboard/LatestResumeCard.jsx";
+import ResumeReviewCard from "../../components/Dashboard/ResumeReviewCard.jsx";
+import RecentInterviewsCard from "../../components/Dashboard/RecentInterviewsCard.jsx";
 import {
     DashboardError,
     DashboardSkeleton,
@@ -13,7 +13,7 @@ import {
     QuickActions,
     ScoreTrendChart,
     DifficultyDistribution
-} from "../../components/dashboard/DashboardExtras.jsx";
+} from "../../components/Dashboard/DashboardExtras.jsx";
 
 import { getStoredTheme, persistTheme } from "../../theme/theme.js";
 
