@@ -9,7 +9,7 @@ function ProtectedRoute({ children }) {
 }
     if (!isAuthenticated) {
         alert("User session is expired pls relogin");
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     return children;

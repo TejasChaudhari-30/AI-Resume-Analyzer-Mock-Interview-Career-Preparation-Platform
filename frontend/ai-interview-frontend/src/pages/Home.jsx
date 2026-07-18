@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 import {
     Sparkles,
     FileText,
@@ -10,6 +12,7 @@ import { motion } from "framer-motion";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 
 function Home(){
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 return (
 
@@ -73,8 +76,61 @@ Register
 
 
 </div>
+<button
+    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+    className="md:hidden rounded-xl p-2 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+>
+    {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+</button>
 
 </motion.nav>
+{mobileMenuOpen && (
+    <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -15 }}
+        className="md:hidden border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#181b21]"
+    >
+        <div className="flex flex-col p-5 gap-4">
+
+            <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="hover:text-blue-500"
+            >
+                Dashboard
+            </Link>
+
+            <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="hover:text-blue-500"
+            >
+                About Me
+            </Link>
+
+            <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="hover:text-blue-500"
+            >
+                Login
+            </Link>
+
+            <ThemeToggle />
+
+            <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3 text-center text-white"
+            >
+                Register
+            </Link>
+
+        </div>
+    </motion.div>
+)}
+
 
 
 
@@ -167,7 +223,7 @@ whileTap={{
 >
 
 <Link
-to="/dashboard"
+to="/register"
 className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 px-7 py-3 font-semibold text-white shadow-lg"
 >
 Get Started

@@ -105,86 +105,45 @@ return (
         >
             {/* ================= Logo ================= */}
 
-            <div className="relative border-b border-slate-200 dark:border-slate-800">
+           <div className="p-6">
+    <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-xl font-bold text-white shadow-lg">
+                AI
+            </div>
 
-                <div className="p-6">
+            {!collapsed && (
+                <div>
+                    <h2 className="font-bold text-slate-900 dark:text-white">
+                        AI Career Prep
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                        Interview Platform
+                    </p>
+                </div>
+            )}
+        </div>
 
-                    <div className="flex items-center justify-between">
+        {/* Mobile Close Button */}
+        <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden rounded-xl p-2 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
+            <X className="h-5 w-5" />
+        </button>
+    </div>
+</div>
+               
 
-                        <div className="flex items-center gap-3 overflow-hidden">
-
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-xl font-bold text-white shadow-lg">
-
-                                AI
-
-                            </div>
-
-                            {
-
-                                !collapsed &&
-
-                                <div>
-
-                                    <h2 className="font-bold text-slate-900 dark:text-white">
-
-                                        AI Career Prep
-
-                                    </h2>
-
-                                    <p className="text-xs text-slate-500">
-
-                                        Interview Platform
-
-                                    </p>
-
-                                </div>
-
-                            }
-
-                        </div>
-
-                    </div>
-                    <button
-
-onClick={() => setMobileOpen(false)}
-
-className="lg:hidden rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
-
+               {/* Desktop Collapse Button */}
+<button
+    onClick={() => setCollapsed(!collapsed)}
+    className="hidden lg:flex absolute -right-4 top-8 h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-lg transition hover:scale-110 dark:border-slate-700 dark:bg-[#181b21] dark:text-white"
 >
-
-<X className="h-5 w-5"/>
-
+    {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
 </button>
 
-                </div>
-
-                {/* Collapse */}
-
-                <button
-
-                    onClick={() => setCollapsed(!collapsed)}
-
-                    className="absolute -right-4 top-8 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-lg transition hover:scale-110 dark:border-slate-700 dark:bg-[#181b21] dark:text-white"
-
-                >
-
-                    {
-
-                        collapsed
-
-                            ?
-
-                            <FaChevronRight />
-
-                            :
-
-                            <FaChevronLeft />
-
-                    }
-
-                </button>
-
-            </div>
+            
 
             {/* ================= Navigation ================= */}
 
