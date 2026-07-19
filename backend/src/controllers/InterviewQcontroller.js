@@ -102,7 +102,7 @@ export const answers=async (req , res)=>{
 
          const{sessionId}=req.params; //not qid session id x   
         const{answers}=req.body;
-         
+         console.log(answers);
          for(const ans of answers){
              await db.query(
         `

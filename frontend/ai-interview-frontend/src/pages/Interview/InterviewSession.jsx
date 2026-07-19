@@ -251,6 +251,7 @@ function InterviewSession() {
         try {
 
             setSubmitting(true);
+            console.log(answers)
 
             await api.post(
 
