@@ -102,7 +102,6 @@ export const answers=async (req , res)=>{
 
          const{sessionId}=req.params; //not qid session id x   
         const{answers}=req.body;
-         console.log(answers);
          for(const ans of answers){
              await db.query(
         `
@@ -118,11 +117,9 @@ export const answers=async (req , res)=>{
 
         const response=await db.query("select id,question, category ,user_answer from  interview_questions where session_id=$1 and user_answer is not null",[sessionId]);
         
-// console.log(response.rows);
 
       const evaluation= await evaluate_answers(response.rows);
       const results=evaluation.results;
-
         for (const result of results) {
   await db.query(
     `
