@@ -294,9 +294,9 @@ dark:bg-[#181b21]
 >
 <FileText className="text-blue-500"/>
 
-<h3 className="mt-5 text-xl font-semibold">
+<h2 className="mt-5 text-xl font-semibold">
 AI Resume Analysis
-</h3>
+</h2>
 
 <p className="mt-3 text-slate-500">
 
@@ -337,9 +337,9 @@ dark:bg-[#181b21]
 >
 <BrainCircuit className="text-cyan-500"/>
 
-<h3 className="mt-5 text-xl font-semibold">
+<h2 className="mt-5 text-xl font-semibold">
 Mock Interviews
-</h3>
+</h2>
 
 <p className="mt-3 text-slate-500">
 
@@ -380,9 +380,9 @@ dark:bg-[#181b21]
 >
 <Target className="text-emerald-500"/>
 
-<h3 className="mt-5 text-xl font-semibold">
+<h2 className="mt-5 text-xl font-semibold">
 Personalized Feedback
-</h3>
+</h2>
 
 <p className="mt-3 text-slate-500">
 
