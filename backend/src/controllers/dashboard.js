@@ -6,8 +6,13 @@ export const getDashboard = async (req, res) => {
         const userId = req.user.id;
 
         // Profile
-        const profile = await db.query(
-            `
+        const [profile, latestResume,
+            latestReview, recentInterviews,
+            resumeCount, reviewCount,
+            interviewCount, averageScore] = await Promise.all(
+                [
+                    db.query(
+                        `
             SELECT
                 id,
                 name,
@@ -17,12 +22,10 @@ export const getDashboard = async (req, res) => {
             FROM users
             WHERE id = $1
             `,
-            [userId]
-        );
-
-        // Latest Resume
-        const latestResume = await db.query(
-            `
+                        [userId]
+                    ),
+                    db.query(
+                        `
             SELECT
                 id,
                 file_name,
@@ -32,12 +35,10 @@ export const getDashboard = async (req, res) => {
             ORDER BY uploaded_at DESC
             LIMIT 1
             `,
-            [userId]
-        );
-
-        // Latest Resume Review
-        const latestReview = await db.query(
-            `
+                        [userId]
+                    ),
+                    db.query(
+                        `
             SELECT
                 rr.resume_id,
                 rr.score,
@@ -52,12 +53,10 @@ export const getDashboard = async (req, res) => {
             ORDER BY rr.created_at DESC
             LIMIT 1
             `,
-            [userId]
-        );
-
-        // Recent Interviews
-        const recentInterviews = await db.query(
-            `
+                        [userId]
+                    ),
+                    db.query(
+                        `
             SELECT
                 id,
                 role,
@@ -69,46 +68,136 @@ export const getDashboard = async (req, res) => {
             ORDER BY started_at DESC
             LIMIT 5
             `,
-            [userId]
-        );
+                        [userId]
+                    ),
+                    db.query(
+                        "SELECT COUNT(*) FROM resumes WHERE user_id = $1",
+                        [req.user.id]
+                    ),
+                    db.query(
+                        `
+                      SELECT COUNT(*)
+                      FROM resume_reviews rr
+                      JOIN resumes r
+                      ON rr.resume_id = r.id
+                      WHERE r.user_id = $1
+                                `,
+                        [req.user.id]
+                    ),
+                    db.query(
+                        "SELECT COUNT(*) FROM interview_sessions WHERE user_id = $1",
+                        [req.user.id]
+                    ),
+                    db.query(
+                        "SELECT COALESCE(AVG(total_score),0) AS average FROM interview_sessions WHERE user_id = $1",
+                        [req.user.id]
+                    )
 
-        // Average Interview Score
-      
-        const resumeCount = await db.query(
-    "SELECT COUNT(*) FROM resumes WHERE user_id = $1",
-    [req.user.id]
-);
+                ]);
 
-const reviewCount = await db.query(
-`
-SELECT COUNT(*)
-FROM resume_reviews rr
-JOIN resumes r
-ON rr.resume_id = r.id
-WHERE r.user_id = $1
-`,
-[req.user.id]
-);
-const interviewCount = await db.query(
-    "SELECT COUNT(*) FROM interview_sessions WHERE user_id = $1",
-    [req.user.id]
-);
+        //         const profile = await db.query(
+        //             `
+        //             SELECT
+        //                 id,
+        //                 name,
+        //                 email,
+        //                 target_role,
+        //                 skills
+        //             FROM users
+        //             WHERE id = $1
+        //             `,
+        //             [userId]
+        //         );
 
-const averageScore = await db.query(
-    "SELECT COALESCE(AVG(total_score),0) AS average FROM interview_sessions WHERE user_id = $1",
-    [req.user.id]
-);
+        //         // Latest Resume
+        //         const latestResume = await db.query(
+        //             `
+        //             SELECT
+        //                 id,
+        //                 file_name,
+        //                 uploaded_at
+        //             FROM resumes
+        //             WHERE user_id = $1
+        //             ORDER BY uploaded_at DESC
+        //             LIMIT 1
+        //             `,
+        //             [userId]
+        //         );
+
+        //         // Latest Resume Review
+        //         const latestReview = await db.query(
+        //             `
+        //             SELECT
+        //                 rr.resume_id,
+        //                 rr.score,
+        //                 rr.strengths,
+        //                 rr.weaknesses,
+        //                 rr.suggestions,
+        //                 rr.created_at
+        //             FROM resume_reviews rr
+        //             JOIN resumes r
+        //             ON rr.resume_id = r.id
+        //             WHERE r.user_id = $1
+        //             ORDER BY rr.created_at DESC
+        //             LIMIT 1
+        //             `,
+        //             [userId]
+        //         );
+
+        //         // Recent Interviews
+        //         const recentInterviews = await db.query(
+        //             `
+        //             SELECT
+        //                 id,
+        //                 role,
+        //                 difficulty,
+        //                 total_score,
+        //                 started_at
+        //             FROM interview_sessions
+        //             WHERE user_id = $1
+        //             ORDER BY started_at DESC
+        //             LIMIT 5
+        //             `,
+        //             [userId]
+        //         );
+
+        //         // Average Interview Score
+
+        //         const resumeCount = await db.query(
+        //     "SELECT COUNT(*) FROM resumes WHERE user_id = $1",
+        //     [req.user.id]
+        // );
+
+        // const reviewCount = await db.query(
+        // `
+        // SELECT COUNT(*)
+        // FROM resume_reviews rr
+        // JOIN resumes r
+        // ON rr.resume_id = r.id
+        // WHERE r.user_id = $1
+        // `,
+        // [req.user.id]
+        // );
+        // const interviewCount = await db.query(
+        //     "SELECT COUNT(*) FROM interview_sessions WHERE user_id = $1",
+        //     [req.user.id]
+        // );
+
+        // const averageScore = await db.query(
+        //     "SELECT COALESCE(AVG(total_score),0) AS average FROM interview_sessions WHERE user_id = $1",
+        //     [req.user.id]
+        // );
 
         return res.status(200).json({
 
 
             profile: profile.rows[0] || null,
             stats: {
-    resumeCount: Number(resumeCount.rows[0].count),
-    reviewCount: Number(reviewCount.rows[0].count),
-    interviewCount: Number(interviewCount.rows[0].count),
-    averageScore: Math.round(Number(averageScore.rows[0].average))
-},
+                resumeCount: Number(resumeCount.rows[0].count),
+                reviewCount: Number(reviewCount.rows[0].count),
+                interviewCount: Number(interviewCount.rows[0].count),
+                averageScore: Math.round(Number(averageScore.rows[0].average))
+            },
 
             latestResume: latestResume.rows[0] || null,
 
