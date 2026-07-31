@@ -39,7 +39,7 @@ function InterviewSession() {
     // ----------------------------
 
     // 2 minutes per question
-    const TOTAL_SECONDS = Math.max(questions.length * 120, 300);
+    const TOTAL_SECONDS = Math.max(questions.length * 600, 600);
 
     const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
 
