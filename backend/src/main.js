@@ -6,6 +6,7 @@ import router3 from "./routes/interviewQroutes.js";
 import router4 from "./routes/profileroutes.js"
 import router5 from "./routes/dashboardroutes.js";
 import cors from "cors";
+import { success } from "zod";
 
 
 dotenv.config();
@@ -37,6 +38,9 @@ app.use("/",router5);
 //     res.send("hii");
 // })
 
+app.get("/health",(req,res)=>{
+    res.status(200).json({success:true,status:"ok",timestamp:new Date().toISOString()});
+});
 
 app.listen(port,()=>{
     console.log(`Server is running on port ${port}`);
