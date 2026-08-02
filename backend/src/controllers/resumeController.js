@@ -2,53 +2,59 @@ import console from "console";
 import db from "../config/db.js";
 import fs from "fs";
 import pdf from "pdf-parse-new";
-
+import redis from "../config/redis.js";
 if (!fs.existsSync("./uploads/resumes")) {
     fs.mkdirSync("./uploads/resumes", { recursive: true });
 }
 export const uploadResume = async (req, res) => {
 
     try {
+        const userId = req.user.id;
         const pdfBuffer = fs.readFileSync(req.file.path);
         const pdfData = await pdf(pdfBuffer);
-// console.log(pdf);
-    const parsedText = pdfData.text;
+        // console.log(pdf);
+        const parsedText = pdfData.text;
 
 
         // console.log(pdfData.text);
 
-      const response = await db.query(
-`
+        const response = await db.query(
+            `
 INSERT INTO resumes
 (user_id,file_name,file_url,parsed_text)
 VALUES($1,$2,$3,$4)
 RETURNING id
 `,
-[
-    req.user.id,
-    req.file.originalname,
-    req.file.path,
-    parsedText
-]
-);
-    
+            [
+                req.user.id,
+                req.file.originalname,
+                req.file.path,
+                parsedText
+            ]
+        );
+        try {
+            await redis.del(`dashboard:${userId}`);
+        } catch (err) {
+            console.error("Redis DEL Error:", err);
+        }
+
         res.json({
             message: "Resume uploaded",
-             resumeId: response.rows[0].id
+            resumeId: response.rows[0].id
         });
-        
 
 
-    }catch (error) {
 
-    console.error(error);
+    } catch (error) {
 
-    return res.status(500).json({
-        message: "Upload failed",
-        error: error.message
-    });
+        console.error(error);
 
-}
+        return res.status(500).json({
+            message: "Upload failed",
+            error: error.message
+        });
+
+    }
 };
 
 export const getUserResumes = async (req, res) => {
@@ -161,6 +167,11 @@ export const deleteResume = async (req, res) => {
             `,
             [resumeId]
         );
+        try {
+            await redis.del(`dashboard:${userId}`);
+        } catch (err) {
+            console.error("Redis DEL Error:", err);
+        }
 
         return res.status(200).json({
             message: "Resume deleted successfully"

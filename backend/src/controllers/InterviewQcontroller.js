@@ -1,9 +1,11 @@
 import db from "../config/db.js";
 import { generateInterviewQuestions } from "../services/aiservice.js";
 import { evaluate_answers } from "../services/aiservice.js";
+import redis from "../config/redis.js";
 export const InterviewQ = async (req, res) => {
     try {
         // Get resume
+        const userId = req.user.id;
         const { resumeId } = req.params;
 
         const { targetRole, difficulty } = req.body;
@@ -22,7 +24,7 @@ RETURNING id
                 difficulty
             ]
         );
-        
+
         console.log(session.rows[0].id); //it will give back the session id to later update the score after the evaluation of answers
 
         const resume = await db.query(
@@ -55,37 +57,43 @@ RETURNING id
         console.log(aiResponse);
         const categories = ["technical", "project", "dsa", "behavioral"];
 
-const insertedQuestions = [];
+        const insertedQuestions = [];
 
-for (const category of categories) {
+        for (const category of categories) {
 
-    const questions = aiResponse[category];
+            const questions = aiResponse[category];
 
-    for (const question of questions) {
+            for (const question of questions) {
 
-        const result = await db.query(
-            `
+                const result = await db.query(
+                    `
             INSERT INTO interview_questions
             (session_id, question, category)
             VALUES ($1,$2,$3)
             RETURNING id, question, category
             `,
-            [
-                session.rows[0].id,
-                question,
-                category
-            ]
-        );
+                    [
+                        session.rows[0].id,
+                        question,
+                        category
+                    ]
+                );
 
-        insertedQuestions.push(result.rows[0]);
+                insertedQuestions.push(result.rows[0]);
 
-    }
+            }
 
-}
+        }
+        try {
+            await redis.del(`dashboard:${userId}`);
+        } catch (err) {
+            console.error("Redis DEL Error:", err);
+        }//delete the cache data after generating new interview session
+
         return res.status(201).json({
             message: "Interview Questions generated successfully or inserting the questions in database",
-            sessionId:session.rows[0].id,
-            questions:insertedQuestions
+            sessionId: session.rows[0].id,
+            questions: insertedQuestions
         });
 
 
@@ -95,44 +103,44 @@ for (const category of categories) {
     }
 }
 
-export const answers=async (req , res)=>{
+export const answers = async (req, res) => {
 
-    try{ 
+    try {
         //changes to make instead of sending qid each time first store all use answer and then for that samee session  evaluate all ans at the end collectiely 
 
-         const{sessionId}=req.params; //not qid session id x   
-        const{answers}=req.body;
-         for(const ans of answers){
-             await db.query(
-        `
+        const { sessionId } = req.params; //not qid session id x   
+        const { answers } = req.body;
+        for (const ans of answers) {
+            await db.query(
+                `
         update interview_questions
         set user_answer =$1
         where id=$2
         `,
-        [ans.answer,ans.questionId]
-    );
-         }
+                [ans.answer, ans.questionId]
+            );
+        }
 
 
 
-        const response=await db.query("select id,question, category ,user_answer from  interview_questions where session_id=$1 and user_answer is not null",[sessionId]);
-        
+        const response = await db.query("select id,question, category ,user_answer from  interview_questions where session_id=$1 and user_answer is not null", [sessionId]);
 
-      const evaluation= await evaluate_answers(response.rows);
-      const results=evaluation.results;
+
+        const evaluation = await evaluate_answers(response.rows);
+        const results = evaluation.results;
         for (const result of results) {
-  await db.query(
-    `
+            await db.query(
+                `
     UPDATE interview_questions
     SET score = $1,
         ai_feedback = $2
     WHERE id = $3
     `,
-    [result.score, result.feedback, result.questionId]
-  );
-}
-   await db.query(
-`
+                [result.score, result.feedback, result.questionId]
+            );
+        }
+        await db.query(
+            `
 UPDATE interview_sessions
 SET
     total_score = $1,
@@ -140,31 +148,31 @@ SET
     ended_at = CURRENT_TIMESTAMP
 WHERE id = $3
 `,
-[
-    evaluation.overallScore,
-    evaluation.overallFeedback,
-    sessionId
-]
-);
- return res.status(201).json({
+            [
+                evaluation.overallScore,
+                evaluation.overallFeedback,
+                sessionId
+            ]
+        );
+        return res.status(201).json({
             message: "Interview answer is evaluated successfully and score is assigned",
             results
         });
 
-   //insert the question  and answer in table interview-Q
+        //insert the question  and answer in table interview-Q
 
-        
-    }catch (error) {
+
+    } catch (error) {
         console.error("Error in question evaluation");
         throw error;
     }
 }
 
-export const getInterviewReport=async (req ,res)=>{
-    try{
-        const {sessionId}=req.params;
+export const getInterviewReport = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
         const session = await db.query(
-`
+            `
 SELECT
     total_score,
     overall_feedback,
@@ -174,11 +182,11 @@ SELECT
 FROM interview_sessions
 WHERE id = $1
 `,
-[sessionId]
-);
+            [sessionId]
+        );
 
-const questions = await db.query(
-`
+        const questions = await db.query(
+            `
 SELECT
     question,
     user_answer,
@@ -189,13 +197,13 @@ FROM interview_questions
 WHERE session_id = $1
 ORDER BY created_at
 `,
-[sessionId]
-);
-return res.status(200).json({
-    overallScore: session.rows[0].total_score,
-    overallFeedback: session.rows[0].overall_feedback,
-    questions: questions.rows
-});
+            [sessionId]
+        );
+        return res.status(200).json({
+            overallScore: session.rows[0].total_score,
+            overallFeedback: session.rows[0].overall_feedback,
+            questions: questions.rows
+        });
     }
     catch (error) {
 
@@ -327,6 +335,7 @@ export const deleteInterview = async (req, res) => {
             [sessionId]
         );
 
+        await redis.del(`dashboard:${userId}`);
         return res.status(200).json({
 
             message: "Interview deleted successfully"

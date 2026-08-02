@@ -1,11 +1,25 @@
 import db from "../config/db.js";
-
+import redis from "../config/redis.js";
 export const getDashboard = async (req, res) => {
     try {
 
         const userId = req.user.id;
-
         // Profile
+        const cacheKey = `dashboard:${userId}`;
+
+        try {
+            const cached = await redis.get(cacheKey);
+
+            if (cached) {
+                console.log("✅ Dashboard Cache HIT")
+                return res.json(JSON.parse(cached));
+            }
+            console.log("❌ Dashboard Cache MISS");
+        }
+        catch (err) {
+            console.error("Redis GET Error:", err);
+        }
+
         const [profile, latestResume,
             latestReview, recentInterviews,
             resumeCount, reviewCount,
@@ -94,6 +108,39 @@ export const getDashboard = async (req, res) => {
                     )
 
                 ]);
+        //if not found on cache then run all db queries and stired it in cache
+        const dashboardData = {
+            profile: profile.rows[0] || null,
+
+            stats: {
+                resumeCount: Number(resumeCount.rows[0].count),
+                reviewCount: Number(reviewCount.rows[0].count),
+                interviewCount: Number(interviewCount.rows[0].count),
+                averageScore: Math.round(Number(averageScore.rows[0].average))
+            },
+
+            latestResume: latestResume.rows[0] || null,
+
+            latestReview: latestReview.rows[0] || null,
+
+            recentInterviews: recentInterviews.rows
+        };
+        try {
+            await redis.set(
+                cacheKey,
+                JSON.stringify(dashboardData),
+                {
+                    EX: 600
+                }
+            );
+
+            console.log("💾 Dashboard cached successfully");
+        }
+        catch (err) {
+            console.error("Redis SET Error:", err);
+        }
+
+        return res.status(200).json(dashboardData);
 
         //         const profile = await db.query(
         //             `
@@ -188,24 +235,24 @@ export const getDashboard = async (req, res) => {
         //     [req.user.id]
         // );
 
-        return res.status(200).json({
+        // return res.status(200).json({
 
 
-            profile: profile.rows[0] || null,
-            stats: {
-                resumeCount: Number(resumeCount.rows[0].count),
-                reviewCount: Number(reviewCount.rows[0].count),
-                interviewCount: Number(interviewCount.rows[0].count),
-                averageScore: Math.round(Number(averageScore.rows[0].average))
-            },
+        //     profile: profile.rows[0] || null,
+        //     stats: {
+        //         resumeCount: Number(resumeCount.rows[0].count),
+        //         reviewCount: Number(reviewCount.rows[0].count),
+        //         interviewCount: Number(interviewCount.rows[0].count),
+        //         averageScore: Math.round(Number(averageScore.rows[0].average))
+        //     },
 
-            latestResume: latestResume.rows[0] || null,
+        //     latestResume: latestResume.rows[0] || null,
 
-            latestReview: latestReview.rows[0] || null,
+        //     latestReview: latestReview.rows[0] || null,
 
-            recentInterviews: recentInterviews.rows,
+        //     recentInterviews: recentInterviews.rows,
 
-        });
+        // });
 
     } catch (error) {
 

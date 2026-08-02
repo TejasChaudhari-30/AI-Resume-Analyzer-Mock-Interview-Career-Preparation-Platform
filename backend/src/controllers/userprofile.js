@@ -1,6 +1,6 @@
 import express from "express";
 import db from "../config/db.js";
-
+import redis from "../config/redis.js";
 export const getUserProfile = async (req, res) => {
     try {
 
@@ -75,6 +75,13 @@ export const updateUserProfile = async (req, res) => {
                 userId
             ]
         );
+
+
+        try {
+            await redis.del(`dashboard:${userId}`);
+        } catch (err) {
+            console.error("Redis DEL Error:", err);
+        }
 
         return res.status(200).json({
             message: "Profile updated successfully",
