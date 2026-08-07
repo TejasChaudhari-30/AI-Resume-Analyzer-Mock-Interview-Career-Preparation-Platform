@@ -8,6 +8,8 @@ const worker = new Worker(
     "resume-review",
 
     async (job) => {
+    //      console.log("📥 JOB RECEIVED:", job.id);
+    // console.log("📦 JOB DATA:", job.data);
 
         const { resumeId, userId } = job.data;
 

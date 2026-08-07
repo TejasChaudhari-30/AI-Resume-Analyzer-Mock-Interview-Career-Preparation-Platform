@@ -37,7 +37,9 @@ RETURNING id
         } catch (err) {
             console.error("Redis DEL Error:", err);
         }
-        await resumeQueue.add("review-resume", {
+        // console.log("📤 Adding resume job:", response.rows[0].id);
+
+        await resumeQueue.add("resume-review", {
             resumeId: response.rows[0].id,
             userId: userId
         });
