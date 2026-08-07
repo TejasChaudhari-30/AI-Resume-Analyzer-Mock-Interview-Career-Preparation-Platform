@@ -1,0 +1,18 @@
+import IORedis from "ioredis";
+import dotenv from "dotenv";
+
+dotenv.config();
+const bullRedis = new IORedis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+     enableReadyCheck: false
+});
+
+bullRedis.on("connect", () => {
+    console.log("✅ BullMQ Redis Connected");
+});
+
+bullRedis.on("error", (err) => {
+    console.error("BullMQ Redis Error:", err);
+});
+
+export default bullRedis;

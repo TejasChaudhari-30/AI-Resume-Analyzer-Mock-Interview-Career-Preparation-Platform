@@ -2,65 +2,77 @@ import db from "../config/db.js";
 import { reviewResume } from "../services/aiservice.js";
 
 
+
 export const review_resume = async (req, res) => {
     try {
+
         const { resumeId } = req.params;
         const { userprompt } = req.body;
         const userId = req.user.id;
 
-        const response = await db.query("SELECT parsed_text from resumes where id=$1", [resumeId]);
+        // Check resume exists and get status
+        const response = await db.query(
+            `
+            SELECT status
+            FROM resumes
+            WHERE id = $1
+            AND user_id = $2
+            `,
+            [resumeId, userId]
+        );
+
         if (response.rows.length === 0) {
             return res.status(404).json({
                 message: "Resume not found"
             });
         }
-        const parsedText = response.rows[0].parsed_text;
 
+        const status = response.rows[0].status;
 
+        if (status === "pending" || status === "processing") {
+            return res.status(400).json({
+                message: "Resume is still being processed. Please wait."
+            });
+        }
 
-        const result = await reviewResume(userprompt, parsedText);
+        if (status === "failed") {
+            return res.status(400).json({
+                message: "Resume processing failed. Please upload again."
+            });
+        }
 
-        //convert the result of ai api in json to js object to access the value of keys
-
-        const review = JSON.parse(result);
-
-        // console.log(review);
-
-        await db.query(
-            `
-INSERT INTO resume_reviews
-(resume_id,score,strengths,weaknesses,suggestions)
-VALUES($1,$2,$3,$4,$5)
-`,
-            [
+        // Add AI review job to BullMQ
+        await reviewQueue.add(
+            "generate-review",
+            {
                 resumeId,
-                review.score,
-                review.strengths,
-                review.weaknesses,
-                review.suggestions
-            ]
+                userId,
+                userPrompt: userprompt
+            },
+            {
+                attempts: 3,
+                backoff: {
+                    type: "exponential",
+                    delay: 5000
+                }
+            }
         );
-        try {
-            await redis.del(`dashboard:${userId}`);
-        } catch (err) {
-            console.error("Redis DEL Error:", err);
-        } //delete cache after gen new review
 
-        return res.status(201).json({
-            message: "Resume review generated successfully",
-            review
+        return res.status(202).json({
+            message: "Resume review generation started.",
+            status: "processing"
         });
-    }
-    catch (error) {
+
+    } catch (error) {
 
         console.error(error);
 
         return res.status(500).json({
-            message: "Failed to generate resume review"
+            message: "Failed to start review generation"
         });
 
     }
-}
+};
 
 
 export const getResumeReviewByResumeId = async (req, res) => {

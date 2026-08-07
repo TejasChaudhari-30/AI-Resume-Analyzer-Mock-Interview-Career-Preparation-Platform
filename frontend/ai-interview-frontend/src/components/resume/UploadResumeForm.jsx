@@ -44,8 +44,9 @@ function UploadResumeForm({ refreshResumes }) {
                 "/resume/upload",
                 formData
             );
-console.log(uploadResponse.data);
+// console.log(uploadResponse.data);
             const resumeId = uploadResponse.data.resumeId
+            await new Promise(resolve => setTimeout(resolve, 3000));
             // Generate AI Review
             const reviewResponse = await api.post(
                 `/resume/review/${resumeId}`,{
