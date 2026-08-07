@@ -6,7 +6,7 @@ import redis from "../config/redis.js";
 import { reviewResume } from "../services/aiservice.js";
 
 const reviewWorker = new Worker(
-    "resume-review",
+    "generate-review",
 
     async (job) => {
 
