@@ -1,9 +1,9 @@
 import { Worker } from "bullmq";
 
 import db from "../config/db.js";
-import redis from "../config/redis.js";
 
 import { reviewResume } from "../services/aiservice.js";
+import bullRedis from "../config/bullRedis.js";
 
 const reviewWorker = new Worker(
     "generate-review",
@@ -108,7 +108,7 @@ const reviewWorker = new Worker(
     },
 
     {
-        connection: redis,
+        connection: bullRedis,
         concurrency: 3
     }
 );
