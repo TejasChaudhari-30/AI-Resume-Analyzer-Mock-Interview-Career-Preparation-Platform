@@ -14,7 +14,7 @@ export const uploadResume = async (req, res) => {
     try {
         const userId = req.user.id;
       
-
+      
         const response = await db.query(
             `
 INSERT INTO resumes(
@@ -39,6 +39,7 @@ RETURNING id
         } catch (err) {
             console.error("Redis DEL Error:", err);
         }
+        const resumeId=response.rows[0].id;
         // console.log("📤 Adding resume job:", response.rows[0].id);
 if (process.env.USE_QUEUE === "true") {
 

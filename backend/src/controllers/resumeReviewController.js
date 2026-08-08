@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 import { reviewResume } from "../services/aiservice.js";
 import { reviewQueue } from "../queues/reviewQueue.js";
+import redis from "../config/redis.js";
 import dotenv from "dotenv";
 dotenv.config();
 
