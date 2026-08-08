@@ -39,12 +39,12 @@ RETURNING id
         }
         // console.log("📤 Adding resume job:", response.rows[0].id);
 
-        await resumeQueue.add("resume-review", {
-            resumeId: response.rows[0].id,
-            userId: userId
-        });
+       const job = await resumeQueue.add("process-resume", {
+    resumeId: response.rows[0].id,
+    userId
+});
 
-
+console.log("✅ JOB ADDED:", job.id, response.rows[0].id);
       return res.status(201).json({
     message: "Resume uploaded successfully",
     status: "processing",
@@ -192,5 +192,39 @@ export const deleteResume = async (req, res) => {
             message: "Failed to delete resume"
         });
 
+    }
+};
+
+export const getResumeStatus = async (req, res) => {
+    try {
+        const { resumeId } = req.params;
+        const userId = req.user.id;
+
+        const result = await db.query(
+            `
+            SELECT id, status
+            FROM resumes
+            WHERE id = $1
+            AND user_id = $2
+            `,
+            [resumeId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Resume not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: result.rows[0].status
+        });
+
+    } catch (error) {
+        console.error("Resume Status Error:", error);
+
+        return res.status(500).json({
+            message: "Failed to get resume status"
+        });
     }
 };

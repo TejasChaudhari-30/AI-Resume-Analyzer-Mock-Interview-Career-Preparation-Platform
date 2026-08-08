@@ -29,11 +29,68 @@ function ResumeReviewPage() {
 
     const [copied, setCopied] = useState("");
 
-    useEffect(() => {
-        fetchReview();
-        
+   useEffect(() => {
 
-    }, []);
+    let interval;
+
+    const checkReviewStatus = async () => {
+
+        try {
+
+            const response = await api.get(
+                `/resume/status/${resumeId}`
+            );
+
+            const status = response.data.status;
+
+            console.log("Resume status:", status);
+
+            if (status === "review_completed") {
+
+                clearInterval(interval);
+
+                await fetchReview();
+
+                setLoading(false);
+
+            } 
+            else if (status === "review_failed") {
+
+                clearInterval(interval);
+
+                setLoading(false);
+
+                alert("Failed to generate resume review.");
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Error checking review status:",
+                error
+            );
+
+            clearInterval(interval);
+
+            setLoading(false);
+        }
+    };
+
+    // Check immediately
+    checkReviewStatus();
+
+    // Then check every 2 seconds
+    interval = setInterval(
+        checkReviewStatus,
+        2000
+    );
+
+    return () => {
+        clearInterval(interval);
+    };
+
+}, [resumeId]);
 
     
 function downloadReport() {
@@ -189,35 +246,27 @@ const suggestions = useMemo(
 
 );
 
-    if (loading) {
+   if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#111318]">
 
-        return (
-            <h1 className="text-center mt-20 text-xl">
-               <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#111318]">
+            <div className="rounded-3xl bg-white dark:bg-[#181b21] p-10 shadow-lg text-center">
 
-    <div className="rounded-3xl bg-white dark:bg-[#181b21] p-10 shadow-lg">
+                <Sparkles className="mx-auto h-12 w-12 animate-pulse text-blue-500" />
 
-        <Sparkles className="mx-auto h-12 w-12 animate-pulse text-blue-500"/>
+                <h2 className="mt-6 text-2xl font-bold dark:text-white">
+                    AI is reviewing your resume...
+                </h2>
 
-        <h2 className="mt-6 text-2xl font-bold dark:text-white">
+                <p className="mt-2 text-slate-500 dark:text-slate-400">
+                    Please wait a few moments.
+                </p>
 
-            AI is reviewing your resume...
+            </div>
 
-        </h2>
-
-        <p className="mt-2 text-slate-500">
-
-            Please wait a few moments.
-
-        </p>
-
-    </div>
-
-</div>
-            </h1>
-        );
-
-    }
+        </div>
+    );
+}
 
     if (!review) {
 

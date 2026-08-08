@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-
+import redis from "../config/redis.js";
 import db from "../config/db.js";
 
 import { reviewResume } from "../services/aiservice.js";
@@ -44,13 +44,13 @@ const reviewWorker = new Worker(
             // Optional:
             // Delete previous review if you allow only one review per resume
 
-            await db.query(
-                `
-                DELETE FROM resume_reviews
-                WHERE resume_id = $1
-                `,
-                [resumeId]
-            );
+            // await db.query(
+            //     `
+            //     DELETE FROM resume_reviews
+            //     WHERE resume_id = $1
+            //     `,
+            //     [resumeId]
+            // );
 
             // Save new review
             await db.query(

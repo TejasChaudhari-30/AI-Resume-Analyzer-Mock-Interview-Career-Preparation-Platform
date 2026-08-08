@@ -12,118 +12,152 @@ import api from "../../api/backendapi.jsx";
 
 function UploadResumeForm({ refreshResumes }) {
 
-    const [file, setFile] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [userprompt, setUserPrompt] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [userprompt, setUserPrompt] = useState("");
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    function handleFileChange(e) {
-        setFile(e.target.files[0]);
+  function handleFileChange(e) {
+    setFile(e.target.files[0]);
+  }
+
+  async function waitForResumeParsing(resumeId) {
+
+    const maxAttempts = 60;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+
+      const response = await api.get(
+        `/resume/status/${resumeId}`
+      );
+
+      const status = response.data.status;
+
+      console.log("Resume status:", status);
+
+      if (status === "parsed") {
+        return true;
+      }
+
+      if (status === "failed") {
+        throw new Error("Resume parsing failed.");
+      }
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000)
+      );
     }
 
-    async function handleSubmit(e) {
+    throw new Error("Resume processing timed out.");
+  }
+  async function handleSubmit(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        if (!file) {
-            alert("Please select a PDF.");
-            return;
-        }
-
-        try {
-
-            setLoading(true);
-
-            const formData = new FormData();
-
-            formData.append("resume", file);
-
-            // Upload Resume
-            const uploadResponse = await api.post(
-                "/resume/upload",
-                formData
-            );
-// console.log(uploadResponse.data);
-            const resumeId = uploadResponse.data.resumeId
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            // Generate AI Review
-            const reviewResponse = await api.post(
-                `/resume/review/${resumeId}`,{
-                    userprompt
-                }
-            );
+    if (!file) {
+      alert("Please select a PDF.");
+      return;
+    }
 
 
-            refreshResumes();
+    try {
 
-            navigate(`/resume/review/${resumeId}`);
+      setLoading(true);
 
-        }
-        catch (error) {
+      const formData = new FormData();
 
-            console.log(error);
+      formData.append("resume", file);
 
-            alert(
-                error.response?.data?.message ||
-                "Upload failed."
-            );
+      // Upload Resume
+      const uploadResponse = await api.post(
+        "/resume/upload",
+        formData
+      );
+      // console.log(uploadResponse.data);
 
-        }
-        finally {
+      const resumeId = uploadResponse.data.resumeId
+      await waitForResumeParsing(resumeId);
+      console.log("Resume parsed successfully");
 
-            setLoading(false);
+      // Generate AI Review
+      const reviewResponse = await api.post(
+        `/resume/review/${resumeId}`, {
+        userprompt
+      }
 
-        }
+      );
+      console.log("Review job added");
+
+
+      refreshResumes();
+
+      navigate(`/resume/review/${resumeId}`);
+
+    }
+    catch (error) {
+
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Upload failed."
+      );
+    }
+    finally {
+
+      setLoading(false);
 
     }
 
-   return (
-  <div className="flex justify-center px-4 py-8 sm:px-6 lg:px-8">
-    <div
-      className={`w-full max-w-4xl transition-all duration-300 ${
-        loading ? "opacity-70 pointer-events-none" : ""
-      }`}
-    >
-      {/* Card */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl transition-all duration-300 dark:border-slate-700 dark:bg-slate-900">
+  }
 
-        {/* Top Gradient */}
-        <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
+  return (
+    <div className="flex justify-center px-4 py-8 sm:px-6 lg:px-8">
+      <div
+        className={`w-full max-w-4xl transition-all duration-300 ${loading ? "opacity-70 pointer-events-none" : ""
+          }`}
+      >
+        {/* Card */}
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl transition-all duration-300 dark:border-slate-700 dark:bg-slate-900">
 
-        <div className="p-6 md:p-10">
+          {/* Top Gradient */}
+          <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
 
-          {/* Header */}
-          <div className="mb-10">
+          <div className="p-6 md:p-10">
 
-            <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-300">
-              AI Resume Analyzer
-            </span>
+            {/* Header */}
+            <div className="mb-10">
 
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-              Upload Your Resume
-            </h1>
+              <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-300">
+                AI Resume Analyzer
+              </span>
 
-            <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
-              Upload your resume and receive an AI-powered ATS review,
-              personalized suggestions, interview readiness analysis,
-              and improvement recommendations.
-            </p>
+              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+                Upload Your Resume
+              </h1>
 
-          </div>
+              <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
+                Upload your resume and receive an AI-powered ATS review,
+                personalized suggestions, interview readiness analysis,
+                and improvement recommendations.
+              </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-8"
-          >
-<div>
+            </div>
 
-<label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-Resume (PDF)
-</label>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-8"
+            >
+              <div>
 
-<label
-className="
+                <label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Resume (PDF)
+                </label>
+
+                <label
+                  className="
 group
 relative
 flex
@@ -148,55 +182,55 @@ dark:bg-slate-800/50
 dark:hover:border-blue-400
 dark:hover:bg-slate-800
 "
->
+                >
 
-<input
-type="file"
-accept=".pdf"
-onChange={handleFileChange}
-className="absolute inset-0 cursor-pointer opacity-0"
-/>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                  />
 
-<div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl transition-all duration-300 group-hover:scale-110 dark:bg-blue-500/20">
-<UploadCloud className="h-12 w-12 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
-</div>
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl transition-all duration-300 group-hover:scale-110 dark:bg-blue-500/20">
+                    <UploadCloud className="h-12 w-12 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
+                  </div>
 
-<h3 className="text-lg font-semibold text-slate-800 dark:text-white">
-Drag & Drop your Resume
-</h3>
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+                    Drag & Drop your Resume
+                  </h3>
 
-<p className="mt-2 text-slate-500 dark:text-slate-400">
-or click anywhere to browse
-</p>
+                  <p className="mt-2 text-slate-500 dark:text-slate-400">
+                    or click anywhere to browse
+                  </p>
 
-<div className="mt-5 rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-md transition-all duration-300 group-hover:scale-105">
-Choose PDF
-</div>
+                  <div className="mt-5 rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-md transition-all duration-300 group-hover:scale-105">
+                    Choose PDF
+                  </div>
 
-<p className="mt-5 text-xs text-slate-400">
-Supports PDF files
-</p>
+                  <p className="mt-5 text-xs text-slate-400">
+                    Supports PDF files
+                  </p>
 
-</label>
+                </label>
 
-</div>
+              </div>
 
-  <div>
+              <div>
 
-<label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-Additional Instructions
-</label>
+                <label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Additional Instructions
+                </label>
 
-<textarea
-rows={5}
-value={userprompt}
-onChange={(e) => setUserPrompt(e.target.value)}
-placeholder="Examples:
+                <textarea
+                  rows={5}
+                  value={userprompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  placeholder="Examples:
 • Focus on ATS Score
 • Backend Developer Internship
 • Highlight React, Node.js & PostgreSQL
 • Prepare for FAANG Interviews"
-className="
+                  className="
 w-full
 rounded-2xl
 border
@@ -219,19 +253,19 @@ dark:text-white
 dark:placeholder:text-slate-500
 dark:focus:ring-blue-900/40
 "
-/>
+                />
 
-<p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-These instructions help the AI generate a personalized resume review.
-</p>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  These instructions help the AI generate a personalized resume review.
+                </p>
 
-</div>
+              </div>
 
               {/* Selected File Preview */}
 
-{file && (
-  <div
-    className="
+              {file && (
+                <div
+                  className="
     rounded-2xl
     border
     border-emerald-200
@@ -244,31 +278,31 @@ These instructions help the AI generate a personalized resume review.
     dark:border-emerald-800
     dark:bg-emerald-900/20
     "
-  >
-    <div className="flex items-center justify-between gap-4">
+                >
+                  <div className="flex items-center justify-between gap-4">
 
-      <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4">
 
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl dark:bg-red-500/20">
-          <FileText className="h-9 w-9 text-red-500" />
-        </div>
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl dark:bg-red-500/20">
+                        <FileText className="h-9 w-9 text-red-500" />
+                      </div>
 
-        <div>
+                      <div>
 
-          <h3 className="font-semibold text-slate-900 dark:text-white">
-            {file.name}
-          </h3>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {file.name}
+                        </h3>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {(file.size / 1024 / 1024).toFixed(2)} MB
-          </p>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
 
-        </div>
+                      </div>
 
-      </div>
+                    </div>
 
-      <span
-        className="
+                    <span
+                      className="
         rounded-full
         bg-emerald-500
         px-4
@@ -278,23 +312,23 @@ These instructions help the AI generate a personalized resume review.
         text-white
         shadow
         "
-      >
-       <div className="flex items-center gap-2">
-  <CheckCircle2 className="h-5 w-5" />
-  Ready to Upload
-</div>
-      </span>
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5" />
+                        Ready to Upload
+                      </div>
+                    </span>
 
-    </div>
-  </div>
-)}
+                  </div>
+                </div>
+              )}
 
-{/* Upload Button */}
+              {/* Upload Button */}
 
-<button
-  type="submit"
-  disabled={loading}
-  className="
+              <button
+                type="submit"
+                disabled={loading}
+                className="
   group
   relative
   flex
@@ -321,105 +355,105 @@ These instructions help the AI generate a personalized resume review.
   disabled:cursor-not-allowed
   disabled:opacity-70
   "
->
+              >
 
-  {loading ? (
-    <>
-      <svg
-        className="h-6 w-6 animate-spin"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-20"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        />
+                {loading ? (
+                  <>
+                    <svg
+                      className="h-6 w-6 animate-spin"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-20"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
 
-        <path
-          className="opacity-100"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-        />
-      </svg>
-<Loader2 className="h-5 w-5 animate-spin" />
-      Uploading & Generating AI Review...
-    </>
-  ) : (
-    <>
-      <>
-  <ArrowUpCircle className="h-5 w-5" />
-  Upload Resume
-</>
-    </>
-  )}
+                      <path
+                        className="opacity-100"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      />
+                    </svg>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Uploading & Generating AI Review...
+                  </>
+                ) : (
+                  <>
+                    <>
+                      <ArrowUpCircle className="h-5 w-5" />
+                      Upload Resume
+                    </>
+                  </>
+                )}
 
-</button>
+              </button>
 
-{/* Footer */}
+              {/* Footer */}
 
-<div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/60">
+              <div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/60">
 
-  <h4 className="font-semibold text-slate-800 dark:text-white">
-    What happens after uploading?
-  </h4>
+                <h4 className="font-semibold text-slate-800 dark:text-white">
+                  What happens after uploading?
+                </h4>
 
-  <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
 
-    <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
-      <div className="text-2xl">📄</div>
+                  <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
+                    <div className="text-2xl">📄</div>
 
-      <h5 className="mt-3 font-semibold dark:text-white">
-        Resume Parsing
-      </h5>
+                    <h5 className="mt-3 font-semibold dark:text-white">
+                      Resume Parsing
+                    </h5>
 
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Your resume is parsed and important information is extracted.
-      </p>
-    </div>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Your resume is parsed and important information is extracted.
+                    </p>
+                  </div>
 
-    <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
+                  <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
 
-      <div className="text-2xl"><Sparkles className="h-8 w-8 text-emerald-500" /></div>
+                    <div className="text-2xl"><Sparkles className="h-8 w-8 text-emerald-500" /></div>
 
-      <h5 className="mt-3 font-semibold dark:text-white">
-        AI Review
-      </h5>
+                    <h5 className="mt-3 font-semibold dark:text-white">
+                      AI Review
+                    </h5>
 
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Our AI analyzes ATS compatibility, skills, projects and weaknesses.
-      </p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Our AI analyzes ATS compatibility, skills, projects and weaknesses.
+                    </p>
 
-    </div>
+                  </div>
 
-    <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
+                  <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900">
 
-      <div className="text-2xl">📈</div>
+                    <div className="text-2xl">📈</div>
 
-      <h5 className="mt-3 font-semibold dark:text-white">
-        Improvement Report
-      </h5>
+                    <h5 className="mt-3 font-semibold dark:text-white">
+                      Improvement Report
+                    </h5>
 
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Receive personalized recommendations and interview guidance.
-      </p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Receive personalized recommendations and interview guidance.
+                    </p>
 
-    </div>
+                  </div>
 
-  </div>
+                </div>
 
-</div>
-          </form>
+              </div>
+            </form>
 
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 
 
 
