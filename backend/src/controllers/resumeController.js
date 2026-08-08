@@ -44,6 +44,9 @@ RETURNING id
     userId
 });
 
+const counts = await resumeQueue.getJobCounts();
+console.log("QUEUE COUNTS:", counts);
+
 console.log("✅ JOB ADDED:", job.id, response.rows[0].id);
       return res.status(201).json({
     message: "Resume uploaded successfully",
