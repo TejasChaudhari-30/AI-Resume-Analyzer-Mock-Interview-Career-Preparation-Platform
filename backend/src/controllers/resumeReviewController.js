@@ -1,7 +1,8 @@
 import db from "../config/db.js";
 import { reviewResume } from "../services/aiservice.js";
 import { reviewQueue } from "../queues/reviewQueue.js";
-
+import dotenv from "dotenv";
+dotenv.config();
 
 export const review_resume = async (req, res) => {
     try {

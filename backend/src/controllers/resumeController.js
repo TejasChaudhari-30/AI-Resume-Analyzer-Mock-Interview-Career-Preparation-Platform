@@ -4,6 +4,8 @@ import fs from "fs";
 import pdf from "pdf-parse-new";
 import redis from "../config/redis.js";
 import { resumeQueue } from "../queues/resumequeue.js";
+import dotenv from "dotenv";
+dotenv.config();
 if (!fs.existsSync("./uploads/resumes")) {
     fs.mkdirSync("./uploads/resumes", { recursive: true });
 }
