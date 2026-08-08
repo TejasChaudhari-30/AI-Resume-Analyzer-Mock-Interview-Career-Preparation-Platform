@@ -5,15 +5,13 @@ import { reviewQueue } from "../queues/reviewQueue.js";
 
 export const review_resume = async (req, res) => {
     try {
-
         const { resumeId } = req.params;
         const { userprompt } = req.body;
         const userId = req.user.id;
 
-        // Check resume exists and get status
         const response = await db.query(
             `
-            SELECT status
+            SELECT parsed_text
             FROM resumes
             WHERE id = $1
             AND user_id = $2
@@ -27,53 +25,106 @@ export const review_resume = async (req, res) => {
             });
         }
 
-        const status = response.rows[0].status;
+        const parsedText = response.rows[0].parsed_text;
 
-        if (status === "pending" || status === "processing") {
+        if (!parsedText) {
             return res.status(400).json({
-                message: "Resume is still being processed. Please wait."
+                message: "Resume is still being processed"
             });
         }
 
-        if (status === "failed") {
-            return res.status(400).json({
-                message: "Resume processing failed. Please upload again."
-            });
-        }
+        // BullMQ mode
+        if (process.env.USE_QUEUE === "true") {
 
-        // Add AI review job to BullMQ
-        await reviewQueue.add(
-            "generate-review",
-            {
+            await db.query(
+                `
+                UPDATE resumes
+                SET status = 'review_pending'
+                WHERE id = $1
+                `,
+                [resumeId]
+            );
+
+            await reviewQueue.add("generate-review", {
                 resumeId,
                 userId,
                 userPrompt: userprompt
-            },
-            {
-                attempts: 3,
-                backoff: {
-                    type: "exponential",
-                    delay: 5000
-                }
-            }
+            });
+
+            return res.status(202).json({
+                message: "Resume review added to queue",
+                status: "review_pending"
+            });
+        }
+
+        // Synchronous mode for deployed MVP
+        await db.query(
+            `
+            UPDATE resumes
+            SET status = 'review_processing'
+            WHERE id = $1
+            `,
+            [resumeId]
         );
 
-        return res.status(202).json({
-            message: "Resume review generation started.",
-            status: "processing"
+        const result = await reviewResume(
+            userprompt,
+            parsedText
+        );
+
+        const review = JSON.parse(result);
+
+        await db.query(
+            `
+            INSERT INTO resume_reviews
+            (
+                resume_id,
+                score,
+                strengths,
+                weaknesses,
+                suggestions
+            )
+            VALUES($1,$2,$3,$4,$5)
+            `,
+            [
+                resumeId,
+                review.score,
+                review.strengths,
+                review.weaknesses,
+                review.suggestions
+            ]
+        );
+
+        await db.query(
+            `
+            UPDATE resumes
+            SET status = 'review_completed'
+            WHERE id = $1
+            `,
+            [resumeId]
+        );
+
+        try {
+            await redis.del(`dashboard:${userId}`);
+        } catch (err) {
+            console.error("Redis DEL Error:", err);
+        }
+
+        return res.status(201).json({
+            message: "Resume review generated successfully",
+            status: "review_completed",
+            review
         });
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Review Error:", error);
 
         return res.status(500).json({
-            message: "Failed to start review generation"
+            message: "Failed to generate resume review"
         });
-
     }
 };
-
 
 export const getResumeReviewByResumeId = async (req, res) => {
 

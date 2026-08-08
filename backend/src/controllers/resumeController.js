@@ -38,20 +38,37 @@ RETURNING id
             console.error("Redis DEL Error:", err);
         }
         // console.log("📤 Adding resume job:", response.rows[0].id);
+if (process.env.USE_QUEUE === "true") {
 
-       const job = await resumeQueue.add("process-resume", {
-    resumeId: response.rows[0].id,
-    userId
-});
+    await resumeQueue.add("resume-review", {
+        resumeId,
+        userId
+    });
 
-const counts = await resumeQueue.getJobCounts();
-console.log("QUEUE COUNTS:", counts);
+} else {
 
-console.log("✅ JOB ADDED:", job.id, response.rows[0].id);
-      return res.status(201).json({
+    const pdfBuffer = fs.readFileSync(req.file.path);
+
+    const pdfData = await pdf(pdfBuffer);
+
+    const parsedText = pdfData.text;
+
+    await db.query(
+        `
+        UPDATE resumes
+        SET parsed_text = $1,
+            status = 'parsed'
+        WHERE id = $2
+        `,
+        [parsedText, resumeId]
+    );
+}
+return res.status(201).json({
     message: "Resume uploaded successfully",
-    status: "processing",
-     resumeId: response.rows[0].id
+    status: process.env.USE_QUEUE === "true"
+        ? "processing"
+        : "parsed",
+    resumeId: response.rows[0].id
 });
 
 
