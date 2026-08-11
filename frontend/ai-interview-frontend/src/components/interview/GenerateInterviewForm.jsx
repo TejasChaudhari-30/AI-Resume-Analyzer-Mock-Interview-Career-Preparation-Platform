@@ -86,13 +86,29 @@ function GenerateInterviewForm() {
             );
 
         }
-        catch (error) {
+       catch (error) {
 
-            console.log(error.response?.data);
+    console.error(error);
 
-            alert("Failed to generate interview.");
+    if (error.response?.status === 429) {
 
-        }
+        const retryAfter =
+            error.response.data?.retryAfter;
+
+        alert(
+            `Too many requests. Please try again in ${
+                Math.ceil(retryAfter / 60)
+            } minutes.`
+        );
+
+        return;
+    }
+
+    alert(
+        error.response?.data?.message ||
+        "can't generate interview."
+    );
+}
         finally {
 
             setLoading(false);

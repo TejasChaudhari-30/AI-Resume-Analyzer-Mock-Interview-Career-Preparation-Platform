@@ -60,9 +60,24 @@ const [loading, setLoading] = useState(false);
 
     }
 
+    
  catch (error) {
 
     console.log(error.response);
+      if (error.response?.status === 429) {
+
+        const retryAfter =
+            error.response.data?.retryAfter;
+
+        alert(
+            `Too many requests. Please try again in ${
+                Math.ceil(retryAfter / 60)
+            } minutes.`
+        );
+
+        return;
+    }
+
 
     setApiError(
         error.response?.data?.message ||

@@ -150,11 +150,29 @@ function downloadReport() {
 
         }
 
-        catch (error) {
+       catch (error) {
 
-            console.log(error);
+    console.error(error);
 
-        }
+    if (error.response?.status === 429) {
+
+        const retryAfter =
+            error.response.data?.retryAfter;
+
+        alert(
+            `Too many requests. Please try again in ${
+                Math.ceil(retryAfter / 60)
+            } minutes.`
+        );
+
+        return;
+    }
+
+    alert(
+        error.response?.data?.message ||
+        "Something went wrong."
+    );
+}
 
         finally {
 
