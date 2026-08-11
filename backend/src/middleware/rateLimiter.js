@@ -59,7 +59,7 @@ const interviewGenerateLimiter = new RateLimiterRedis({
 const loginLimiter = new RateLimiterRedis({
     storeClient: redis,
     keyPrefix: "rl:login",
-    points: 10,
+    points: 2,
     duration: 15 * 60
 });
 
