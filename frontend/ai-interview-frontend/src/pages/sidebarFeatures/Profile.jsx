@@ -6,7 +6,9 @@ import {
     Briefcase,
     Code2,
     Save,
-    LockKeyhole
+    LockKeyhole,
+     Eye,
+    EyeOff
 } from "lucide-react";
 
 import api from "../../api/backendapi.jsx";
@@ -34,7 +36,12 @@ function Profile() {
 
     const [passwordMessage, setPasswordMessage] = useState("");
     const [passwordLoading, setPasswordLoading] = useState(false);
-
+    const [passwordMessageType, setPasswordMessageType] = useState("");
+    const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+});
 
     useEffect(() => {
 
@@ -90,12 +97,14 @@ function Profile() {
         e.preventDefault();
 
         setPasswordMessage("");
+        setPasswordMessageType("");
 
         if (
             passwordData.newPassword !==
             passwordData.confirmPassword
         ) {
             setPasswordMessage("New passwords do not match");
+             setPasswordMessageType("error");
             return;
         }
 
@@ -103,6 +112,7 @@ function Profile() {
             setPasswordMessage(
                 "Password must be at least 8 characters"
             );
+            setPasswordMessageType("error");
             return;
         }
 
@@ -124,6 +134,7 @@ function Profile() {
             setPasswordMessage(
                 "Password changed successfully"
             );
+             setPasswordMessageType("success");
 
             setPasswordData({
                 currentPassword: "",
@@ -138,6 +149,7 @@ function Profile() {
                 error.response?.data?.message ||
                 "Failed to change password"
             );
+              setPasswordMessageType("error");
 
         }
         finally {
@@ -757,27 +769,56 @@ disabled:opacity-60
                             Current Password
                         </label>
 
-                        <input
-                            type="password"
-                            name="currentPassword"
-                            value={passwordData.currentPassword}
-                            onChange={handlePasswordChange}
-                            required
-                            className="
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-slate-50
-                    px-4
-                    py-3
-                    outline-none
-                    focus:border-blue-500
-                    dark:border-slate-700
-                    dark:bg-slate-900
-                    dark:text-white
-                "
-                        />
+                      <div className="relative">
+
+    <input
+        type={showPassword.current ? "text" : "password"}
+        name="currentPassword"
+        value={passwordData.currentPassword}
+        onChange={handlePasswordChange}
+        required
+        className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-slate-50
+            px-4
+            py-3
+            pr-12
+            outline-none
+            focus:border-blue-500
+            dark:border-slate-700
+            dark:bg-slate-900
+            dark:text-white
+        "
+    />
+
+    <button
+        type="button"
+        onClick={() =>
+            setShowPassword(prev => ({
+                ...prev,
+                current: !prev.current
+            }))
+        }
+        className="
+            absolute
+            right-4
+            top-1/2
+            -translate-y-1/2
+            text-slate-400
+            hover:text-slate-600
+            dark:hover:text-slate-200
+        "
+    >
+        {showPassword.current
+            ? <EyeOff size={20} />
+            : <Eye size={20} />
+        }
+    </button>
+
+</div>
 
                     </div>
 
@@ -796,28 +837,56 @@ disabled:opacity-60
                             New Password
                         </label>
 
-                        <input
-                            type="password"
-                            name="newPassword"
-                            value={passwordData.newPassword}
-                            onChange={handlePasswordChange}
-                            required
-                            className="
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-slate-50
-                    px-4
-                    py-3
-                    outline-none
-                    focus:border-blue-500
-                    dark:border-slate-700
-                    dark:bg-slate-900
-                    dark:text-white
-                "
-                        />
+                       <div className="relative">
 
+    <input
+        type={showPassword.new ? "text" : "password"}
+        name="newPassword"
+        value={passwordData.newPassword}
+        onChange={handlePasswordChange}
+        required
+        className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-slate-50
+            px-4
+            py-3
+            pr-12
+            outline-none
+            focus:border-blue-500
+            dark:border-slate-700
+            dark:bg-slate-900
+            dark:text-white
+        "
+    />
+
+    <button
+        type="button"
+        onClick={() =>
+            setShowPassword(prev => ({
+                ...prev,
+                new: !prev.new
+            }))
+        }
+        className="
+            absolute
+            right-4
+            top-1/2
+            -translate-y-1/2
+            text-slate-400
+            hover:text-slate-600
+            dark:hover:text-slate-200
+        "
+    >
+        {showPassword.new
+            ? <EyeOff size={20} />
+            : <Eye size={20} />
+        }
+    </button>
+
+</div>
                     </div>
 
 
@@ -835,44 +904,71 @@ disabled:opacity-60
                             Confirm New Password
                         </label>
 
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={passwordData.confirmPassword}
-                            onChange={handlePasswordChange}
-                            required
-                            className="
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-slate-50
-                    px-4
-                    py-3
-                    outline-none
-                    focus:border-blue-500
-                    dark:border-slate-700
-                    dark:bg-slate-900
-                    dark:text-white
-                "
-                        />
+                      <div className="relative">
+
+    <input
+        type={showPassword.confirm ? "text" : "password"}
+        name="confirmPassword"
+        value={passwordData.confirmPassword}
+        onChange={handlePasswordChange}
+        required
+        className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-slate-50
+            px-4
+            py-3
+            pr-12
+            outline-none
+            focus:border-blue-500
+            dark:border-slate-700
+            dark:bg-slate-900
+            dark:text-white
+        "
+    />
+
+    <button
+        type="button"
+        onClick={() =>
+            setShowPassword(prev => ({
+                ...prev,
+                confirm: !prev.confirm
+            }))
+        }
+        className="
+            absolute
+            right-4
+            top-1/2
+            -translate-y-1/2
+            text-slate-400
+            hover:text-slate-600
+            dark:hover:text-slate-200
+        "
+    >
+        {showPassword.confirm
+            ? <EyeOff size={20} />
+            : <Eye size={20} />
+        }
+    </button>
+
+</div>
 
                     </div>
 
 
-                    {
-                        passwordMessage && (
-
-                            <p className="
-                    text-center
-                    text-sm
-                    text-emerald-500
-                ">
-                                {passwordMessage}
-                            </p>
-
-                        )
-                    }
+                   {passwordMessage && (
+    <p
+        className={`text-center text-sm ${
+            passwordMessageType === "error"
+                ? "text-red-500"
+                : "text-emerald-500"
+        }`}
+    >
+        {passwordMessage}
+    </p>
+)}
 
 
                     <button
