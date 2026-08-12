@@ -108,9 +108,9 @@ function Profile() {
             return;
         }
 
-        if (passwordData.newPassword.length < 8) {
+        if (passwordData.newPassword.length < 6) {
             setPasswordMessage(
-                "Password must be at least 8 characters"
+                "Password must be at least 6 characters"
             );
             setPasswordMessageType("error");
             return;
