@@ -44,7 +44,7 @@ function App() {
              <Route path="/interview/result/:sessionId" element={<ProtectedRoute> <Layout><InterviewResult/></Layout> </ProtectedRoute>}/>
               <Route path="/interviews/history" element={<ProtectedRoute> <Layout><InterviewHistoryPage/></Layout> </ProtectedRoute>}/>
              <Route path="/resume/history" element={<ProtectedRoute> <Layout><ResumeHistoryPage/></Layout> </ProtectedRoute>}/>
-              <Route path="/forgot-password" element={<ForgotPassword/>}/>
+              <Route path="/reset-password" element={<ForgotPassword/>}/>
 
 
 

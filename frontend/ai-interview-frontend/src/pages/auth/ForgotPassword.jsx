@@ -77,10 +77,10 @@ function ResetPassword() {
 
 
         // Password length
-        if (passwordData.newPassword.length < 8) {
+        if (passwordData.newPassword.length < 6) {
 
             setMessage(
-                "Password must be at least 8 characters."
+                "Password must be at least 6 characters."
             );
 
             setMessageType("error");
