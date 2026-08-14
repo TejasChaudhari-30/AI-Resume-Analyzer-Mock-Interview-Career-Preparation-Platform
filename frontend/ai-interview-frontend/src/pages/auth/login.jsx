@@ -372,7 +372,7 @@ className="mt-10 space-y-6"
 
 </div>
 </form>
-<Link to="/forgot-password">
+<Link to="/reset-password">
     Forgot Password?
 </Link>
 
