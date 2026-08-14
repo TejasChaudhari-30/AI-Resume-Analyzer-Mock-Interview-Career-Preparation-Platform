@@ -17,6 +17,7 @@ import ResumeHistoryPage from './pages/resume/ResumeHistoryPage.jsx';
 import { applyTheme, getStoredTheme } from './theme/theme.js';
 import  Home from  "./pages/Home.jsx";
 import About from './pages/About.jsx';
+import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 
 function App() {
   useEffect(() => {
@@ -43,7 +44,7 @@ function App() {
              <Route path="/interview/result/:sessionId" element={<ProtectedRoute> <Layout><InterviewResult/></Layout> </ProtectedRoute>}/>
               <Route path="/interviews/history" element={<ProtectedRoute> <Layout><InterviewHistoryPage/></Layout> </ProtectedRoute>}/>
              <Route path="/resume/history" element={<ProtectedRoute> <Layout><ResumeHistoryPage/></Layout> </ProtectedRoute>}/>
-
+              <Route path="/forget-password" element={<ForgotPassword/>}/>
 
 
 
