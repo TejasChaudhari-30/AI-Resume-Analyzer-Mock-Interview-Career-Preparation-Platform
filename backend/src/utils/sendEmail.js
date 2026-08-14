@@ -1,44 +1,66 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv"
+import { Resend } from "resend";
+import dotenv from "dotenv";
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-   family: 4,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    },
-
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000
-});
+const resend = new Resend(
+    process.env.RESEND_API_KEY
+);
 
 
-export const sendEmail = async (to, subject, html) => {
+export const sendEmail = async (
+    to,
+    subject,
+    html
+) => {
 
     try {
 
-        const info = await transporter.sendMail({
-            from: `"AI Resume Analyzer" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html
-        });
+        const { data, error } =
+            await resend.emails.send({
 
-        console.log("EMAIL SENT:", info.messageId);
-        console.log("EMAIL RESPONSE:", info.response);
+                from:
+                    "AI Resume Analyzer <onboarding@resend.dev>",
 
-        return info;
+                to: [to],
 
-    } catch (error) {
+                subject: subject,
 
-        console.error("EMAIL ERROR:", error);
+                html: html
+            });
+
+
+        if (error) {
+
+            console.error(
+                "RESEND EMAIL ERROR:",
+                error
+            );
+
+            throw new Error(
+                error.message ||
+                "Failed to send email"
+            );
+        }
+
+
+        console.log(
+            "EMAIL SENT:",
+            data
+        );
+
+
+        return data;
+
+    }
+    catch (error) {
+
+        console.error(
+            "EMAIL ERROR:",
+            error
+        );
 
         throw error;
 
     }
+
 };

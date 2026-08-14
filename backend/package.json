@@ -21,11 +21,11 @@
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
-    "nodemailer": "^9.0.5",
     "pdf-parse-new": "^2.1.0",
     "pg": "^8.21.0",
     "rate-limiter-flexible": "^11.2.0",
     "redis": "^6.2.0",
+    "resend": "^6.20.0",
     "zod": "^4.4.3"
   }
 }
