@@ -1,141 +1,48 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-    LockKeyhole,
-    Eye,
-    EyeOff,
-    CheckCircle,
-    ArrowLeft
-} from "lucide-react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Mail, ArrowLeft, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import api from "../../api/backendapi.jsx";
 
-function ResetPassword() {
+function ForgotPassword() {
 
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-
-    // Get token from:
-    // /reset-password?token=xxxxxxxx
-    const token = searchParams.get("token");
-
-    const [passwordData, setPasswordData] = useState({
-        newPassword: "",
-        confirmPassword: ""
-    });
-
-    const [showPassword, setShowPassword] = useState({
-        new: false,
-        confirm: false
-    });
-
+    const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("");
+    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-
-
-    function handleChange(e) {
-
-        setPasswordData({
-            ...passwordData,
-            [e.target.name]: e.target.value
-        });
-
-    }
-
 
     async function handleSubmit(e) {
 
         e.preventDefault();
 
         setMessage("");
-        setMessageType("");
-
-
-        // Check token
-        if (!token) {
-
-            setMessage("Invalid or missing reset link.");
-            setMessageType("error");
-
-            return;
-        }
-
-
-        // Check passwords
-        if (
-            passwordData.newPassword !==
-            passwordData.confirmPassword
-        ) {
-
-            setMessage("Passwords do not match.");
-            setMessageType("error");
-
-            return;
-        }
-
-
-        // Password length
-        if (passwordData.newPassword.length < 6) {
-
-            setMessage(
-                "Password must be at least 6 characters."
-            );
-
-            setMessageType("error");
-
-            return;
-        }
-
-
+        setError("");
         setLoading(true);
-
 
         try {
 
             const response = await api.post(
-                "/auth/reset-password",
+                "/auth/forgot-password",
                 {
-                    token: token,
-                    newPassword:
-                        passwordData.newPassword
+                    email
                 }
             );
 
-
             setMessage(
                 response.data.message ||
-                "Password reset successfully."
+                "If an account with this email exists, a reset link has been sent."
             );
 
-            setMessageType("success");
-
-
-            // Clear fields
-            setPasswordData({
-                newPassword: "",
-                confirmPassword: ""
-            });
-
-
-            // Redirect to login after 2 seconds
-            setTimeout(() => {
-
-                navigate("/login");
-
-            }, 2000);
-
+            setEmail("");
 
         }
         catch (error) {
 
-            setMessage(
+            setError(
                 error.response?.data?.message ||
-                "Invalid or expired reset link."
+                "Something went wrong. Please try again."
             );
-
-            setMessageType("error");
 
         }
         finally {
@@ -164,16 +71,13 @@ function ResetPassword() {
                     opacity: 0,
                     y: 30
                 }}
-
                 animate={{
                     opacity: 1,
                     y: 0
                 }}
-
                 transition={{
                     duration: 0.5
                 }}
-
                 className="
                     w-full
                     max-w-md
@@ -190,10 +94,7 @@ function ResetPassword() {
 
                 {/* Header */}
 
-                <div className="
-                    mb-8
-                    text-center
-                ">
+                <div className="mb-8 text-center">
 
                     <div className="
                         mx-auto
@@ -210,9 +111,7 @@ function ResetPassword() {
                         text-white
                         shadow-lg
                     ">
-
-                        <LockKeyhole size={30} />
-
+                        <Mail size={30} />
                     </div>
 
 
@@ -221,7 +120,7 @@ function ResetPassword() {
                         font-bold
                         dark:text-white
                     ">
-                        Reset Password
+                        Forgot Password?
                     </h1>
 
 
@@ -230,343 +129,170 @@ function ResetPassword() {
                         text-slate-500
                         dark:text-slate-400
                     ">
-                        Create a new password for your account.
+                        Enter your registered email and
+                        we'll send you a password reset link.
                     </p>
 
                 </div>
 
 
-                {/* No token */}
+                {/* Form */}
 
-                {!token ? (
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                >
 
-                    <div className="text-center">
+                    <div>
 
-                        <p className="
-                            mb-6
+                        <label className="
+                            mb-2
+                            block
                             text-sm
-                            text-red-500
+                            font-medium
+                            dark:text-slate-300
                         ">
-                            This password reset link is
-                            invalid or missing.
-                        </p>
+                            Email Address
+                        </label>
 
 
-                        <Link
-                            to="/forgot-password"
-                            className="
-                                inline-flex
-                                items-center
-                                gap-2
-                                text-sm
-                                font-medium
-                                text-blue-600
-                                hover:text-blue-700
-                                dark:text-cyan-400
-                            "
-                        >
+                        <div className="relative">
 
-                            <ArrowLeft size={16} />
+                            <Mail
+                                size={20}
+                                className="
+                                    absolute
+                                    left-4
+                                    top-1/2
+                                    -translate-y-1/2
+                                    text-slate-400
+                                "
+                            />
 
-                            Request a new reset link
 
-                        </Link>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) =>
+                                    setEmail(e.target.value)
+                                }
+                                placeholder="you@example.com"
+                                required
+                                className="
+                                    w-full
+                                    rounded-2xl
+                                    border
+                                    border-slate-200
+                                    bg-slate-50
+                                    py-3
+                                    pl-12
+                                    pr-4
+                                    outline-none
+                                    focus:border-blue-500
+                                    dark:border-slate-700
+                                    dark:bg-slate-900
+                                    dark:text-white
+                                "
+                            />
+
+                        </div>
 
                     </div>
 
-                ) : (
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="space-y-5"
-                    >
+                    {/* Success */}
 
-                        {/* New Password */}
-
-                        <div>
-
-                            <label className="
-                                mb-2
-                                block
-                                text-sm
-                                font-medium
-                                dark:text-slate-300
-                            ">
-                                New Password
-                            </label>
-
-
-                            <div className="relative">
-
-                                <input
-                                    type={
-                                        showPassword.new
-                                            ? "text"
-                                            : "password"
-                                    }
-
-                                    name="newPassword"
-
-                                    value={
-                                        passwordData.newPassword
-                                    }
-
-                                    onChange={handleChange}
-
-                                    placeholder="Enter new password"
-
-                                    required
-
-                                    className="
-                                        w-full
-                                        rounded-2xl
-                                        border
-                                        border-slate-200
-                                        bg-slate-50
-                                        py-3
-                                        pl-4
-                                        pr-12
-                                        outline-none
-                                        focus:border-blue-500
-                                        dark:border-slate-700
-                                        dark:bg-slate-900
-                                        dark:text-white
-                                    "
-                                />
-
-
-                                <button
-                                    type="button"
-
-                                    onClick={() =>
-                                        setShowPassword(prev => ({
-                                            ...prev,
-                                            new: !prev.new
-                                        }))
-                                    }
-
-                                    className="
-                                        absolute
-                                        right-4
-                                        top-1/2
-                                        -translate-y-1/2
-                                        text-slate-400
-                                        hover:text-slate-600
-                                        dark:hover:text-slate-200
-                                    "
-                                >
-
-                                    {showPassword.new
-                                        ? <EyeOff size={20} />
-                                        : <Eye size={20} />
-                                    }
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* Confirm Password */}
-
-                        <div>
-
-                            <label className="
-                                mb-2
-                                block
-                                text-sm
-                                font-medium
-                                dark:text-slate-300
-                            ">
-                                Confirm New Password
-                            </label>
-
-
-                            <div className="relative">
-
-                                <input
-                                    type={
-                                        showPassword.confirm
-                                            ? "text"
-                                            : "password"
-                                    }
-
-                                    name="confirmPassword"
-
-                                    value={
-                                        passwordData.confirmPassword
-                                    }
-
-                                    onChange={handleChange}
-
-                                    placeholder="Confirm new password"
-
-                                    required
-
-                                    className="
-                                        w-full
-                                        rounded-2xl
-                                        border
-                                        border-slate-200
-                                        bg-slate-50
-                                        py-3
-                                        pl-4
-                                        pr-12
-                                        outline-none
-                                        focus:border-blue-500
-                                        dark:border-slate-700
-                                        dark:bg-slate-900
-                                        dark:text-white
-                                    "
-                                />
-
-
-                                <button
-                                    type="button"
-
-                                    onClick={() =>
-                                        setShowPassword(prev => ({
-                                            ...prev,
-                                            confirm:
-                                                !prev.confirm
-                                        }))
-                                    }
-
-                                    className="
-                                        absolute
-                                        right-4
-                                        top-1/2
-                                        -translate-y-1/2
-                                        text-slate-400
-                                        hover:text-slate-600
-                                        dark:hover:text-slate-200
-                                    "
-                                >
-
-                                    {showPassword.confirm
-                                        ? <EyeOff size={20} />
-                                        : <Eye size={20} />
-                                    }
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* Password requirement */}
+                    {message && (
 
                         <p className="
-                            text-xs
-                            text-slate-500
-                            dark:text-slate-400
+                            text-center
+                            text-sm
+                            text-emerald-500
                         ">
-                            Password must be at least 8 characters.
+                            {message}
                         </p>
 
-
-                        {/* Message */}
-
-                        {message && (
-
-                            <div className={`
-                                flex
-                                items-center
-                                justify-center
-                                gap-2
-                                text-center
-                                text-sm
-                                ${
-                                    messageType === "error"
-                                        ? "text-red-500"
-                                        : "text-emerald-500"
-                                }
-                            `}>
-
-                                {messageType === "success" && (
-                                    <CheckCircle size={17} />
-                                )}
-
-                                <span>
-                                    {message}
-                                </span>
-
-                            </div>
-
-                        )}
+                    )}
 
 
-                        {/* Submit */}
+                    {/* Error */}
 
-                        <button
-                            type="submit"
+                    {error && (
 
-                            disabled={loading}
-
-                            className="
-                                flex
-                                w-full
-                                items-center
-                                justify-center
-                                gap-2
-                                rounded-2xl
-                                bg-gradient-to-r
-                                from-blue-600
-                                to-cyan-500
-                                py-3
-                                font-semibold
-                                text-white
-                                shadow-lg
-                                transition
-                                hover:-translate-y-1
-                                disabled:opacity-60
-                            "
-                        >
-
-                            <LockKeyhole size={20} />
-
-                            {loading
-                                ? "Resetting..."
-                                : "Reset Password"
-                            }
-
-                        </button>
-
-
-                        {/* Back to login */}
-
-                        <div className="
-                            pt-2
+                        <p className="
                             text-center
+                            text-sm
+                            text-red-500
                         ">
+                            {error}
+                        </p>
 
-                            <Link
-                                to="/login"
-                                className="
-                                    inline-flex
-                                    items-center
-                                    gap-2
-                                    text-sm
-                                    font-medium
-                                    text-blue-600
-                                    hover:text-blue-700
-                                    dark:text-cyan-400
-                                "
-                            >
+                    )}
 
-                                <ArrowLeft size={16} />
 
-                                Back to Login
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="
+                            flex
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-2xl
+                            bg-gradient-to-r
+                            from-blue-600
+                            to-cyan-500
+                            py-3
+                            font-semibold
+                            text-white
+                            shadow-lg
+                            transition
+                            hover:-translate-y-1
+                            disabled:opacity-60
+                        "
+                    >
 
-                            </Link>
+                        <Send size={20} />
 
-                        </div>
+                        {loading
+                            ? "Sending..."
+                            : "Send Reset Link"
+                        }
 
-                    </form>
+                    </button>
 
-                )}
+                </form>
+
+
+                {/* Back to Login */}
+
+                <div className="
+                    mt-6
+                    text-center
+                ">
+
+                    <Link
+                        to="/login"
+                        className="
+                            inline-flex
+                            items-center
+                            gap-2
+                            text-sm
+                            font-medium
+                            text-blue-600
+                            hover:text-blue-700
+                            dark:text-cyan-400
+                        "
+                    >
+
+                        <ArrowLeft size={16} />
+
+                        Back to Login
+
+                    </Link>
+
+                </div>
 
             </motion.div>
 
@@ -576,4 +302,4 @@ function ResetPassword() {
 
 }
 
-export default ResetPassword;
+export default ForgotPassword;
