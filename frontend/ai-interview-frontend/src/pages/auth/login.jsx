@@ -372,7 +372,18 @@ className="mt-10 space-y-6"
 
 </div>
 </form>
-<Link to="/forgot-password">
+<Link
+    to="/forgot-password"
+    className="
+        text-sm
+        font-medium
+        text-blue-600
+        hover:text-blue-700
+        transition-colors
+        dark:text-cyan-400
+        dark:hover:text-cyan-300
+    "
+>
     Forgot Password?
 </Link>
 
