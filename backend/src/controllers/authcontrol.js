@@ -401,7 +401,10 @@ export const refreshAccessToken = async (req, res) => {
 
         const oldRefreshToken =
             req.cookies.refreshToken;
-
+console.log(
+    "Refresh token exists:",
+    !!oldRefreshToken
+);
 
         if (!oldRefreshToken) {
 
