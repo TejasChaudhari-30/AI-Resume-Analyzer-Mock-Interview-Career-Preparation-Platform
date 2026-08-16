@@ -10,12 +10,12 @@ dotenv.config();
 export const register = async (req, res) => {
     try {
 
-        const {name,email,password,target_role,skills}=req.body;
-         const password_hash = await bcrypt.hash(password, 10);
-          await db.query("insert into users (name,email,password_hash,target_role,skills) values ($1,$2,$3,$4,$5)",
-            [name, email, password_hash,target_role,skills]
+        const { name, email, password, target_role, skills } = req.body;
+        const password_hash = await bcrypt.hash(password, 10);
+        await db.query("insert into users (name,email,password_hash,target_role,skills) values ($1,$2,$3,$4,$5)",
+            [name, email, password_hash, target_role, skills]
         );
-         res.status(201).json({ message: "registered" });
+        res.status(201).json({ message: "registered" });
         console.log("user registered");
 
 
@@ -30,100 +30,136 @@ export const register = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-  try {
+    try {
 
-    const { email, password } = req.body;
+        const { email, password } = req.body;
 
-    const result = await db.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+        const result = await db.query(
+            "SELECT * FROM users WHERE email = $1",
+            [email]
+        );
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({
-        message: "Invalid email or password"
-      });
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        const user = result.rows[0];
+
+        const isMatch = await bcrypt.compare(
+            password,
+            user.password_hash
+        );
+
+        if (!isMatch) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        const accessToken = jwt.sign(
+            {
+                id: user.id,
+                name: user.name
+            },
+            process.env.JWT_secret,
+            { expiresIn: "15m" }
+        );
+        //generate refresh token
+        const refreshToken = crypto.randomBytes(64).toString("hex");
+        const refreshtoken_hash = crypto
+            .createHash("sha256")
+            .update(refreshToken)
+            .digest("hex");
+        await db.query(
+            `
+            INSERT INTO refresh_tokens
+            (
+                user_id,token_hash,  expires_at
+            )
+            VALUES (
+                $1,
+                $2,
+                NOW() + INTERVAL '7 days'
+            )
+            `,
+            [
+                user.id,
+                refreshtoken_hash
+            ]
+        );
+
+        //store  refresh token  in cookies 
+         res.cookie(
+            "refreshToken",
+            refreshToken,   
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            }
+        );
+
+        // console.log(token);
+        res.status(200).json({
+            message: "Login successful",
+            accessToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                target_role: user.target_role,
+                skills: user.skills
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Something went wrong"
+        });
     }
-
-    const user = result.rows[0];
-
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
-
-    if (!isMatch) {
-      return res.status(401).json({
-        message: "Invalid email or password"
-      });
-    }
-
-    const token = jwt.sign(
-      { id: user.id ,
-        name:user.name
-      },
-      process.env.JWT_secret,
-      { expiresIn: "7d" }
-    );
-
-    // console.log(token);
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        target_role: user.target_role,
-        skills: user.skills
-      }
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Something went wrong"
-    });
-  }
 };
 
-export const changePassword =async (req,res)=>{
-try{
-  const userId=req.user.id;
-  const {currentPassword,newPassword}=req.body;
-   if (!currentPassword || !newPassword) {
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
             return res.status(400).json({
                 message: "Current password and new password are required"
             });
         }
-      const result= await db.query("select password_hash from users where id =$1", [userId]);
+        const result = await db.query("select password_hash from users where id =$1", [userId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
-        const hashedPassword=result.rows[0].password_hash;
-         const isMatch = await bcrypt.compare(
+        const hashedPassword = result.rows[0].password_hash;
+        const isMatch = await bcrypt.compare(
             currentPassword,
             hashedPassword
         );
-          if (!isMatch) {
+        if (!isMatch) {
             return res.status(401).json({
                 message: "Current password is incorrect"
             });
         }
-         const samePassword = await bcrypt.compare(
+        const samePassword = await bcrypt.compare(
             newPassword,
             hashedPassword
         );
-         if (samePassword) {
+        if (samePassword) {
             return res.status(400).json({
                 message: "New password must be different"
             });
         }
-           const newHashedPassword = await bcrypt.hash(
+        const newHashedPassword = await bcrypt.hash(
             newPassword,
             10
         );
@@ -138,8 +174,8 @@ try{
             message: "Password changed successfully"
         });
 
-}
-catch (error) {
+    }
+    catch (error) {
         console.error("Change password error:", error);
 
         return res.status(500).json({
@@ -357,4 +393,270 @@ export const resetPassword = async (req, res) => {
         });
 
     }
+};
+
+export const refreshAccessToken = async (req, res) => {
+
+    try {
+
+        const oldRefreshToken =
+            req.cookies.refreshToken;
+
+
+        if (!oldRefreshToken) {
+
+            return res.status(401).json({
+                message: "Refresh token missing"
+            });
+
+        }
+
+
+        // ==================================
+        // Hash received refresh token
+        // ==================================
+
+        const oldHash =
+            crypto
+        .createHash("sha256")
+        .update(oldRefreshToken)
+        .digest("hex");;
+
+
+        // ==================================
+        // Find token
+        // ==================================
+
+        const result = await db.query(
+            `
+            SELECT
+                rt.id,
+                rt.user_id,
+                rt.expires_at,
+                rt.revoked_at,
+                u.email,
+                u.name
+
+            FROM refresh_tokens rt
+
+            JOIN users u
+                ON u.id = rt.user_id
+
+            WHERE rt.token_hash = $1
+            `,
+            [oldHash]
+        );
+
+
+        if (result.rows.length === 0) {
+
+            return res.status(401).json({
+                message: "Invalid refresh token"
+            });
+
+        }
+
+
+        const storedToken = result.rows[0];
+
+
+        // ==================================
+        // Check revoked
+        // ==================================
+
+        if (storedToken.revoked_at) {
+
+            return res.status(401).json({
+                message: "Refresh token revoked"
+            });
+
+        }
+
+
+        // ==================================
+        // Check expiration
+        // ==================================
+
+        if (
+            new Date(storedToken.expires_at) <
+            new Date()
+        ) {
+
+            return res.status(401).json({
+                message: "Refresh token expired"
+            });
+
+        }
+
+
+        // ==================================
+        // Revoke old refresh token
+        // ==================================
+
+        await db.query(
+            `
+            UPDATE refresh_tokens
+            SET revoked_at = NOW()
+            WHERE id = $1
+            `,
+            [storedToken.id]
+        );
+
+
+        // ==================================
+        // Generate new access token
+        // ==================================
+
+        const user = {
+            id: storedToken.user_id,
+            email: storedToken.email,
+            name:storedToken.name  
+        };
+
+
+        const accessToken = jwt.sign(
+        {
+            id: user.id,
+            name:user.name
+
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: "15m"
+        }
+    );
+
+
+
+        // ==================================
+        // Generate new refresh token
+        // ==================================
+
+        const newRefreshToken =crypto.randomBytes(64).toString("hex")
+            
+
+        const newHash = crypto
+        .createHash("sha256")
+        .update(newRefreshToken)
+        .digest("hex");
+
+
+        // ==================================
+        // Store new refresh token
+        // ==================================
+
+        await db.query(
+            `
+            INSERT INTO refresh_tokens
+            (
+                user_id,
+                token_hash,
+                expires_at
+            )
+            VALUES (
+                $1,
+                $2,
+                NOW() + INTERVAL '7 days'
+            )
+            `,
+            [
+                user.id,
+                newHash
+            ]
+        );
+
+
+        // ==================================
+        // Send new cookie
+        // ==================================
+
+        res.cookie(
+            "refreshToken",
+            newRefreshToken,
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            }
+        );
+
+
+        return res.status(200).json({
+
+            accessToken,
+            user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+    }
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Failed to refresh token"
+        });
+
+    }
+
+};
+
+export const logout = async (req, res) => {
+
+    try {
+
+        const refreshToken =
+            req.cookies.refreshToken;
+
+
+        if (refreshToken) {
+
+            const tokenHash = crypto
+        .createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
+
+               
+
+
+            await db.query(
+                `
+                UPDATE refresh_tokens
+                SET revoked_at = NOW()
+                WHERE token_hash = $1
+                `,
+                [tokenHash]
+            );
+
+        }
+
+
+        res.clearCookie(
+            "refreshToken",
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax"
+            }
+        );
+
+
+        return res.status(200).json({
+            message: "Logged out successfully"
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Logout failed"
+        });
+
+    }
+
 };

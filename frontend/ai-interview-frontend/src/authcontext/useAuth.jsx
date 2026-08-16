@@ -1,48 +1,138 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useState
+} from "react";
+
+import api, {
+    setAccessToken
+} from "../api/backendapi.jsx";
+
 
 const AuthContext = createContext();
+
 
 export const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(null);
+
     const [token, setToken] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [loading, setloading]=useState(true);
+
+    const [isAuthenticated, setIsAuthenticated] =
+        useState(false);
+
+    const [loading, setLoading] =
+        useState(true);
+
+
+    // ==========================================
+    // Restore session when application starts
+    // ==========================================
 
     useEffect(() => {
 
-        const storedToken = localStorage.getItem("token");
-        if (storedToken) {
-            setToken(storedToken);
-            setIsAuthenticated(true);
+        const restoreSession = async () => {
 
-            // Later:
-            // Fetch user profile here using the token
-        }
+            try {
 
-        setloading(false);
+                const response =
+                    await api.post("/auth/refresh");
+
+                const newAccessToken =
+                    response.data.accessToken;
+
+                setAccessToken(newAccessToken);
+
+                setToken(newAccessToken);
+
+                setIsAuthenticated(true);
+
+                // If backend returns user
+                if (response.data.user) {
+
+                    setUser(response.data.user);
+
+                }
+
+            } catch (error) {
+
+                console.log(
+                    "No active session"
+                );
+
+                setAccessToken(null);
+
+                setToken(null);
+
+                setUser(null);
+
+                setIsAuthenticated(false);
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+
+        restoreSession();
 
     }, []);
 
+
+    // ==========================================
+    // LOGIN
+    // ==========================================
+
     const login = (userData, jwtToken) => {
 
-        localStorage.setItem("token", jwtToken);
+        // DO NOT store token in localStorage
+
+        setAccessToken(jwtToken);
+
+        setToken(jwtToken);
 
         setUser(userData);
-        setToken(jwtToken);
+
         setIsAuthenticated(true);
 
     };
 
-    const logout = () => {
 
-        localStorage.removeItem("token");
+    // ==========================================
+    // LOGOUT
+    // ==========================================
 
-        setUser(null);
-        setToken(null);
-        setIsAuthenticated(false);
+    const logout = async () => {
+
+        try {
+
+            await api.post("/auth/logout");
+
+        } catch (error) {
+
+            console.error(
+                "Logout error:",
+                error
+            );
+
+        } finally {
+
+            setAccessToken(null);
+
+            setToken(null);
+
+            setUser(null);
+
+            setIsAuthenticated(false);
+
+        }
 
     };
+
 
     return (
 
@@ -64,6 +154,7 @@ export const AuthProvider = ({ children }) => {
     );
 
 };
+
 
 export const useAuth = () => {
 

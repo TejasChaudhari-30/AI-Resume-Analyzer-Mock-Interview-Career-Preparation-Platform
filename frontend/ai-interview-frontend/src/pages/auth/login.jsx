@@ -52,7 +52,7 @@ const [loading, setLoading] = useState(false);
 
             response.data.user,
 
-            response.data.token
+            response.data.accessToken
 
         );
 

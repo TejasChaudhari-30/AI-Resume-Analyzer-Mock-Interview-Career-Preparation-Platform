@@ -7,6 +7,8 @@ import router4 from "./routes/profileroutes.js"
 import router5 from "./routes/dashboardroutes.js";
 import cors from "cors";
 import { success } from "zod";
+import cookieParser from "cookie-parser";
+
 
 
 dotenv.config();
@@ -27,7 +29,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-
+app.use(cookieParser());
 app.use("/auth", router1);
 app.use("/resume",router2);
 app.use("/interview",router3);
