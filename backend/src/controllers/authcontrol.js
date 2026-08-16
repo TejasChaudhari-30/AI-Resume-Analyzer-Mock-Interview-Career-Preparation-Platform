@@ -523,7 +523,7 @@ console.log(
             name:user.name
 
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_secret,
         {
             expiresIn: "15m"
         }
