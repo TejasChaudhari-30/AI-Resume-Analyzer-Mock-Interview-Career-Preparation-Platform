@@ -9,6 +9,8 @@ import cors from "cors";
 import { success } from "zod";
 import cookieParser from "cookie-parser";
 
+import cron from "node-cron";
+import { cleanupRefreshTokens } from "./Cron/refreshTokenCleanup.js";
 
 
 dotenv.config();
@@ -27,6 +29,11 @@ app.use(
         credentials:true,
     })
 );
+cron.schedule("0 3 * * *", async () => {
+    console.log("🧹 Running refresh token cleanup...");
+    await cleanupRefreshTokens();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
@@ -39,6 +46,7 @@ app.use("/",router5);
 // app.get("/",(req,res)=>{
 //     res.send("hii");
 // })
+
 
 app.get("/health",(req,res)=>{
     res.status(200).json({success:true,status:"ok",timestamp:new Date().toISOString()});
